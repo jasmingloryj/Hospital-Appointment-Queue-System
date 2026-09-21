@@ -23,7 +23,8 @@ public class AuthService {
      */
     private static final String DB_URL =
             "jdbc:mysql://localhost:3306/hospital_queue_db"
-                    + "?useSSL=false&serverTimezone=Asia/Kolkata";
+                    + "?useSSL=false&serverTimezone=Asia/Kolkata"
+                    + "&allowPublicKeyRetrieval=true";
 
     private static final String DB_USER = "root";
 
