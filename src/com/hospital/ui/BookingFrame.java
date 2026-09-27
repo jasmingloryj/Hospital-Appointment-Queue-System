@@ -1,7 +1,13 @@
 package com.hospital.ui;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.FlowLayout;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,15 +22,18 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import com.hospital.model.Appointment;
 import com.hospital.model.Doctor;
 import com.hospital.model.User;
 import com.hospital.service.AppointmentService;
 import com.hospital.service.DoctorService;
 
 /**
- * Appointment booking screen.
+ * Professional appointment booking screen.
  *
  * Module 2:
  * Appointment Booking & Scheduling
@@ -45,7 +54,8 @@ public class BookingFrame extends JFrame {
 
     private JTextField dateField;
     private JTextField timeField;
-    private JTextField symptomsField;
+
+    private JTextArea symptomsArea;
 
     private JCheckBox emergencyCheckBox;
 
@@ -54,15 +64,24 @@ public class BookingFrame extends JFrame {
         this.patient = patient;
 
         doctorService = new DoctorService();
-        appointmentService = new AppointmentService();
+        appointmentService =
+                new AppointmentService();
 
         setTitle(
                 "Hospital Appointment System - Book Appointment"
         );
 
-        setSize(550, 450);
+        setExtendedState(
+                JFrame.MAXIMIZED_BOTH
+        );
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setMinimumSize(
+                new Dimension(1100, 700)
+        );
+
+        setDefaultCloseOperation(
+                JFrame.EXIT_ON_CLOSE
+        );
 
         setLocationRelativeTo(null);
 
@@ -72,118 +91,816 @@ public class BookingFrame extends JFrame {
     }
 
     /**
-     * Creates the appointment booking form.
+     * Creates the professional booking interface.
      */
     private void createUI() {
 
         JPanel mainPanel =
-                new JPanel(new BorderLayout(10, 10));
+                new JPanel(new BorderLayout());
 
-        mainPanel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        20, 20, 20, 20
+        mainPanel.setBackground(
+                AppTheme.BACKGROUND
+        );
+
+        /*
+         * =================================================
+         * SIDEBAR
+         * =================================================
+         */
+
+        JPanel sidebar =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        sidebar.setBackground(
+                AppTheme.PRIMARY_DARK
+        );
+
+        sidebar.setPreferredSize(
+                new Dimension(250, 0)
+        );
+
+        /*
+         * Branding.
+         */
+
+        JPanel brandPanel =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        brandPanel.setBackground(
+                AppTheme.PRIMARY_DARK
+        );
+
+        GridBagConstraints brandGbc =
+                new GridBagConstraints();
+
+        brandGbc.gridx = 0;
+        brandGbc.gridy = 0;
+
+        brandGbc.insets =
+                new Insets(
+                        25, 10, 5, 10
+                );
+
+        JLabel logo =
+                new JLabel("+");
+
+        logo.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        42
                 )
         );
 
-        JLabel titleLabel =
+        logo.setForeground(
+                Color.WHITE
+        );
+
+        brandPanel.add(
+                logo,
+                brandGbc
+        );
+
+        brandGbc.gridy++;
+
+        JLabel brandName =
                 new JLabel(
-                        "Book an Appointment",
-                        JLabel.CENTER
+                        "HOSPITAL+"
                 );
 
-        mainPanel.add(
-                titleLabel,
+        brandName.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        22
+                )
+        );
+
+        brandName.setForeground(
+                Color.WHITE
+        );
+
+        brandPanel.add(
+                brandName,
+                brandGbc
+        );
+
+        brandGbc.gridy++;
+
+        JLabel portalLabel =
+                new JLabel(
+                        "Appointment Portal"
+                );
+
+        portalLabel.setFont(
+                AppTheme.SMALL_FONT
+        );
+
+        portalLabel.setForeground(
+                new Color(
+                        190, 210, 235
+                )
+        );
+
+        brandPanel.add(
+                portalLabel,
+                brandGbc
+        );
+
+        sidebar.add(
+                brandPanel,
                 BorderLayout.NORTH
         );
 
-        JPanel formPanel =
+        /*
+         * Navigation.
+         */
+
+        JPanel navigationPanel =
                 new JPanel(
-                        new GridLayout(6, 2, 10, 10)
+                        new GridBagLayout()
                 );
 
-        JLabel doctorLabel =
-                new JLabel("Doctor:");
+        navigationPanel.setBackground(
+                AppTheme.PRIMARY_DARK
+        );
+
+        GridBagConstraints navGbc =
+                new GridBagConstraints();
+
+        navGbc.gridx = 0;
+        navGbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        navGbc.weightx = 1;
+
+        navGbc.insets =
+                new Insets(
+                        6, 15, 6, 15
+                );
+
+        JButton dashboardButton =
+                createSidebarButton(
+                        "Dashboard"
+                );
+
+        JButton bookingButton =
+                createSidebarButton(
+                        "Book Appointment"
+                );
+
+        JButton historyButton =
+                createSidebarButton(
+                        "My Appointments"
+                );
+
+        JButton logoutButton =
+                createSidebarButton(
+                        "Logout"
+                );
+
+        navGbc.gridy = 0;
+
+        navigationPanel.add(
+                dashboardButton,
+                navGbc
+        );
+
+        navGbc.gridy++;
+
+        navigationPanel.add(
+                bookingButton,
+                navGbc
+        );
+
+        navGbc.gridy++;
+
+        navigationPanel.add(
+                historyButton,
+                navGbc
+        );
+
+        navGbc.gridy++;
+
+        navigationPanel.add(
+                logoutButton,
+                navGbc
+        );
+
+        sidebar.add(
+                navigationPanel,
+                BorderLayout.NORTH
+        );
+
+        /*
+         * =================================================
+         * MAIN CONTENT
+         * =================================================
+         */
+
+        JPanel contentPanel =
+                new JPanel(
+                        new BorderLayout(
+                                20,
+                                20
+                        )
+                );
+
+        contentPanel.setBackground(
+                AppTheme.BACKGROUND
+        );
+
+        contentPanel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        30,
+                        35,
+                        30,
+                        35
+                )
+        );
+
+        /*
+         * Page header.
+         */
+
+        JPanel headerPanel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        headerPanel.setOpaque(
+                false
+        );
+
+        JPanel headingPanel =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        headingPanel.setOpaque(
+                false
+        );
+
+        GridBagConstraints headingGbc =
+                new GridBagConstraints();
+
+        headingGbc.gridx = 0;
+        headingGbc.gridy = 0;
+
+        headingGbc.anchor =
+                GridBagConstraints.WEST;
+
+        headingGbc.insets =
+                new Insets(
+                        0,
+                        0,
+                        5,
+                        0
+                );
+
+        JLabel titleLabel =
+                new JLabel(
+                        "Book an Appointment"
+                );
+
+        titleLabel.setFont(
+                AppTheme.TITLE_FONT
+        );
+
+        titleLabel.setForeground(
+                AppTheme.TEXT_PRIMARY
+        );
+
+        headingPanel.add(
+                titleLabel,
+                headingGbc
+        );
+
+        headingGbc.gridy++;
+
+        JLabel subtitleLabel =
+                new JLabel(
+                        "Select a doctor, choose a suitable "
+                                + "time and provide your symptoms."
+                );
+
+        subtitleLabel.setFont(
+                AppTheme.BODY_FONT
+        );
+
+        subtitleLabel.setForeground(
+                AppTheme.TEXT_SECONDARY
+        );
+
+        headingPanel.add(
+                subtitleLabel,
+                headingGbc
+        );
+
+        headerPanel.add(
+                headingPanel,
+                BorderLayout.WEST
+        );
+
+        contentPanel.add(
+                headerPanel,
+                BorderLayout.NORTH
+        );
+
+        /*
+         * =================================================
+         * BOOKING CARD
+         * =================================================
+         */
+
+        JPanel bookingCard =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        bookingCard.setBackground(
+                AppTheme.SURFACE
+        );
+
+        bookingCard.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                AppTheme.BORDER
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                30,
+                                35,
+                                30,
+                                35
+                        )
+                )
+        );
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+
+        gbc.weightx = 1;
+
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        gbc.anchor =
+                GridBagConstraints.WEST;
+
+        gbc.insets =
+                new Insets(
+                        7,
+                        5,
+                        7,
+                        5
+                );
+
+        /*
+         * Doctor
+         */
+
+        addFieldLabel(
+                bookingCard,
+                "Select Doctor",
+                gbc
+        );
+
+        gbc.gridy++;
 
         doctorComboBox =
                 new JComboBox<>();
 
-        JLabel dateLabel =
-                new JLabel(
-                        "Date (YYYY-MM-DD):"
-                );
+        doctorComboBox.setFont(
+                AppTheme.BODY_FONT
+        );
+
+        doctorComboBox.setBackground(
+                Color.WHITE
+        );
+
+        doctorComboBox.setPreferredSize(
+                new Dimension(
+                        0,
+                        42
+                )
+        );
+
+        bookingCard.add(
+                doctorComboBox,
+                gbc
+        );
+
+        /*
+         * Date
+         */
+
+        gbc.gridy++;
+
+        addFieldLabel(
+                bookingCard,
+                "Appointment Date",
+                gbc
+        );
+
+        gbc.gridy++;
 
         dateField =
                 new JTextField();
 
-        JLabel timeLabel =
-                new JLabel(
-                        "Time (HH:MM):"
-                );
+        AppTheme.styleTextField(
+                dateField
+        );
+
+        dateField.setToolTipText(
+                "Format: YYYY-MM-DD"
+        );
+
+        bookingCard.add(
+                dateField,
+                gbc
+        );
+
+        /*
+         * Time
+         */
+
+        gbc.gridy++;
+
+        addFieldLabel(
+                bookingCard,
+                "Appointment Time",
+                gbc
+        );
+
+        gbc.gridy++;
 
         timeField =
                 new JTextField();
 
-        JLabel symptomsLabel =
-                new JLabel("Symptoms:");
+        AppTheme.styleTextField(
+                timeField
+        );
 
-        symptomsField =
-                new JTextField();
+        timeField.setToolTipText(
+                "Format: HH:MM"
+        );
 
-        JLabel emergencyLabel =
-                new JLabel("Emergency:");
+        bookingCard.add(
+                timeField,
+                gbc
+        );
+
+        /*
+         * Symptoms
+         */
+
+        gbc.gridy++;
+
+        addFieldLabel(
+                bookingCard,
+                "Symptoms / Reason for Visit",
+                gbc
+        );
+
+        gbc.gridy++;
+
+        symptomsArea =
+                new JTextArea(
+                        4,
+                        20
+                );
+
+        symptomsArea.setFont(
+                AppTheme.BODY_FONT
+        );
+
+        symptomsArea.setLineWrap(
+                true
+        );
+
+        symptomsArea.setWrapStyleWord(
+                true
+        );
+
+        symptomsArea.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                AppTheme.BORDER
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                8,
+                                10,
+                                8,
+                                10
+                        )
+                )
+        );
+
+        JScrollPane symptomsScrollPane =
+                new JScrollPane(
+                        symptomsArea
+                );
+
+        bookingCard.add(
+                symptomsScrollPane,
+                gbc
+        );
+
+        /*
+         * Emergency flag
+         */
+
+        gbc.gridy++;
+
+        JPanel emergencyPanel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        emergencyPanel.setBackground(
+                new Color(
+                        255,
+                        245,
+                        245
+                )
+        );
+
+        emergencyPanel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                new Color(
+                                        245,
+                                        190,
+                                        190
+                                )
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                10,
+                                12,
+                                10,
+                                12
+                        )
+                )
+        );
 
         emergencyCheckBox =
-                new JCheckBox("Flag as Emergency");
+                new JCheckBox(
+                        "Flag this appointment as an emergency"
+                );
+
+        emergencyCheckBox.setFont(
+                AppTheme.SUBHEADING_FONT
+        );
+
+        emergencyCheckBox.setForeground(
+                AppTheme.DANGER
+        );
+
+        emergencyCheckBox.setBackground(
+                new Color(
+                        255,
+                        245,
+                        245
+                )
+        );
+
+        emergencyPanel.add(
+                emergencyCheckBox,
+                BorderLayout.CENTER
+        );
+
+        bookingCard.add(
+                emergencyPanel,
+                gbc
+        );
+
+        /*
+         * Information text
+         */
+
+        gbc.gridy++;
+
+        JLabel informationLabel =
+                new JLabel(
+                        "<html><i>"
+                                + "Emergency requests will be "
+                                + "reviewed according to hospital "
+                                + "emergency procedures."
+                                + "</i></html>"
+                );
+
+        informationLabel.setFont(
+                AppTheme.SMALL_FONT
+        );
+
+        informationLabel.setForeground(
+                AppTheme.TEXT_SECONDARY
+        );
+
+        bookingCard.add(
+                informationLabel,
+                gbc
+        );
+
+        /*
+         * Buttons
+         */
+
+        gbc.gridy++;
+
+        JPanel buttonPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                10,
+                                5
+                        )
+                );
+
+        buttonPanel.setOpaque(
+                false
+        );
+
+        JButton cancelButton =
+                new JButton(
+                        "Back"
+                );
+
+        cancelButton.setFont(
+                AppTheme.BODY_FONT
+        );
+
+        cancelButton.setForeground(
+                AppTheme.TEXT_SECONDARY
+        );
+
+        cancelButton.setBackground(
+                Color.WHITE
+        );
+
+        cancelButton.setFocusPainted(
+                false
+        );
+
+        cancelButton.setBorder(
+                BorderFactory.createLineBorder(
+                        AppTheme.BORDER
+                )
+        );
 
         JButton bookButton =
-                new JButton("Book Appointment");
+                new JButton(
+                        "Confirm Appointment"
+                );
 
-        JButton backButton =
-                new JButton("Back");
+        AppTheme.styleButton(
+                bookButton
+        );
 
-        formPanel.add(doctorLabel);
-        formPanel.add(doctorComboBox);
+        buttonPanel.add(
+                cancelButton
+        );
 
-        formPanel.add(dateLabel);
-        formPanel.add(dateField);
+        buttonPanel.add(
+                bookButton
+        );
 
-        formPanel.add(timeLabel);
-        formPanel.add(timeField);
+        bookingCard.add(
+                buttonPanel,
+                gbc
+        );
 
-        formPanel.add(symptomsLabel);
-        formPanel.add(symptomsField);
-
-        formPanel.add(emergencyLabel);
-        formPanel.add(emergencyCheckBox);
-
-        formPanel.add(bookButton);
-        formPanel.add(backButton);
+        contentPanel.add(
+                bookingCard,
+                BorderLayout.CENTER
+        );
 
         mainPanel.add(
-                formPanel,
+                sidebar,
+                BorderLayout.WEST
+        );
+
+        mainPanel.add(
+                contentPanel,
                 BorderLayout.CENTER
         );
 
         add(mainPanel);
 
         /*
-         * Book appointment.
+         * =================================================
+         * BUTTON ACTIONS
+         * =================================================
          */
+
         bookButton.addActionListener(
                 e -> bookAppointment()
         );
 
-        /*
-         * Return to patient dashboard.
-         */
-        backButton.addActionListener(
+        cancelButton.addActionListener(
                 e -> openDashboard()
+        );
+
+        dashboardButton.addActionListener(
+                e -> openDashboard()
+        );
+
+        bookingButton.addActionListener(
+                e -> {
+                    // Already on booking screen.
+                }
+        );
+
+        historyButton.addActionListener(
+                e -> openHistory()
+        );
+
+        logoutButton.addActionListener(
+                e -> logout()
         );
     }
 
     /**
-     * Loads all doctors from the database into
-     * the doctor selection box.
+     * Adds a standard field label.
+     */
+    private void addFieldLabel(
+            JPanel panel,
+            String text,
+            GridBagConstraints gbc) {
+
+        JLabel label =
+                new JLabel(text);
+
+        label.setFont(
+                AppTheme.SUBHEADING_FONT
+        );
+
+        label.setForeground(
+                AppTheme.TEXT_PRIMARY
+        );
+
+        panel.add(
+                label,
+                gbc
+        );
+    }
+
+    /**
+     * Creates a sidebar navigation button.
+     */
+    private JButton createSidebarButton(
+            String text) {
+
+        JButton button =
+                new JButton(text);
+
+        button.setFont(
+                AppTheme.BODY_FONT
+        );
+
+        button.setForeground(
+                Color.WHITE
+        );
+
+        button.setBackground(
+                AppTheme.PRIMARY_DARK
+        );
+
+        button.setHorizontalAlignment(
+                JButton.LEFT
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorder(
+                BorderFactory.createEmptyBorder(
+                        12,
+                        15,
+                        12,
+                        15
+                )
+        );
+
+        button.setCursor(
+                new java.awt.Cursor(
+                        java.awt.Cursor.HAND_CURSOR
+                )
+        );
+
+        return button;
+    }
+
+    /**
+     * Loads doctors from the database.
      */
     private void loadDoctors() {
 
@@ -196,7 +913,9 @@ public class BookingFrame extends JFrame {
 
             for (Doctor doctor : doctors) {
 
-                doctorComboBox.addItem(doctor);
+                doctorComboBox.addItem(
+                        doctor
+                );
             }
 
             if (doctors.isEmpty()) {
@@ -223,27 +942,36 @@ public class BookingFrame extends JFrame {
 
     /**
      * Handles appointment booking.
+     *
+     * The original appointment business logic
+     * remains unchanged.
      */
     private void bookAppointment() {
 
         Doctor selectedDoctor =
-                (Doctor) doctorComboBox.getSelectedItem();
+                (Doctor)
+                        doctorComboBox
+                                .getSelectedItem();
 
         String dateText =
-                dateField.getText().trim();
+                dateField
+                        .getText()
+                        .trim();
 
         String timeText =
-                timeField.getText().trim();
+                timeField
+                        .getText()
+                        .trim();
 
         String symptoms =
-                symptomsField.getText().trim();
+                symptomsArea
+                        .getText()
+                        .trim();
 
         boolean emergency =
-                emergencyCheckBox.isSelected();
+                emergencyCheckBox
+                        .isSelected();
 
-        /*
-         * Validate doctor selection.
-         */
         if (selectedDoctor == null) {
 
             JOptionPane.showMessageDialog(
@@ -255,9 +983,7 @@ public class BookingFrame extends JFrame {
 
             return;
         }
-        /*
-         * Validate other fields.
-         */
+
         if (dateText.isEmpty()
                 || timeText.isEmpty()
                 || symptoms.isEmpty()) {
@@ -273,25 +999,25 @@ public class BookingFrame extends JFrame {
         }
 
         LocalDate appointmentDate;
+
         LocalTime appointmentTime;
 
-        /*
-         * Convert the entered date and time.
-         */
         try {
 
             appointmentDate =
-                    LocalDate.parse(dateText);
+                    LocalDate.parse(
+                            dateText
+                    );
 
             appointmentTime =
                     LocalTime.parse(
-                            timeText
-                                    + (timeText.length() == 5
-                                    ? ":00"
-                                    : "")
+                            timeText.length() == 5
+                                    ? timeText + ":00"
+                                    : timeText
                     );
 
-        } catch (DateTimeParseException ex) {
+        } catch (
+                DateTimeParseException ex) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -308,13 +1034,13 @@ public class BookingFrame extends JFrame {
         try {
 
             /*
-             * Step 1:
-             * Check doctor's configured availability.
+             * Check doctor availability.
              */
-            if (!appointmentService.isDoctorAvailable(
-                    selectedDoctor,
-                    appointmentDate,
-                    appointmentTime)) {
+            if (!appointmentService
+                    .isDoctorAvailable(
+                            selectedDoctor,
+                            appointmentDate,
+                            appointmentTime)) {
 
                 JOptionPane.showMessageDialog(
                         this,
@@ -326,15 +1052,15 @@ public class BookingFrame extends JFrame {
 
                 return;
             }
+
             /*
-             * Step 2:
-             * Check whether the selected time slot
-             * has already been booked.
+             * Check whether the slot is already booked.
              */
-            if (appointmentService.isSlotAlreadyBooked(
-                    selectedDoctor.getId(),
-                    appointmentDate,
-                    appointmentTime)) {
+            if (appointmentService
+                    .isSlotAlreadyBooked(
+                            selectedDoctor.getId(),
+                            appointmentDate,
+                            appointmentTime)) {
 
                 JOptionPane.showMessageDialog(
                         this,
@@ -347,23 +1073,19 @@ public class BookingFrame extends JFrame {
             }
 
             /*
-             * Step 3:
              * Create the appointment.
              */
-            var appointment =
-                    appointmentService.bookAppointment(
-                            patient.getUserId(),
-                            selectedDoctor.getId(),
-                            appointmentDate,
-                            appointmentTime,
-                            symptoms,
-                            emergency
-                    );
+            Appointment appointment =
+                    appointmentService
+                            .bookAppointment(
+                                    patient.getUserId(),
+                                    selectedDoctor.getId(),
+                                    appointmentDate,
+                                    appointmentTime,
+                                    symptoms,
+                                    emergency
+                            );
 
-            /*
-             * Step 4:
-             * Display confirmation.
-             */
             String emergencyMessage =
                     emergency
                             ? "\nEmergency flag: YES"
@@ -373,9 +1095,14 @@ public class BookingFrame extends JFrame {
                     this,
                     "Appointment booked successfully!\n\n"
                             + "Appointment ID: "
-                            + appointment.getAppointmentId()
+                            + appointment
+                                    .getAppointmentId()
                             + "\nDoctor: "
-                            + selectedDoctor.getFullName()
+                            + selectedDoctor
+                                    .getFullName()
+                            + "\nDepartment: "
+                            + selectedDoctor
+                                    .getDepartment()
                             + "\nDate: "
                             + appointmentDate
                             + "\nTime: "
@@ -398,15 +1125,46 @@ public class BookingFrame extends JFrame {
             );
         }
     }
+
     /**
      * Returns to the patient dashboard.
      */
     private void openDashboard() {
 
         PatientDashboard dashboard =
-                new PatientDashboard(patient);
+                new PatientDashboard(
+                        patient
+                );
 
         dashboard.setVisible(true);
+
+        dispose();
+    }
+
+    /**
+     * Opens appointment history.
+     */
+    private void openHistory() {
+
+        AppointmentHistoryFrame historyFrame =
+                new AppointmentHistoryFrame(
+                        patient
+                );
+
+        historyFrame.setVisible(true);
+
+        dispose();
+    }
+
+    /**
+     * Logs the patient out.
+     */
+    private void logout() {
+
+        LoginFrame loginFrame =
+                new LoginFrame();
+
+        loginFrame.setVisible(true);
 
         dispose();
     }
