@@ -1,33 +1,23 @@
 package com.hospital.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-
 import com.hospital.exception.InvalidCredentialsException;
 import com.hospital.model.User;
 import com.hospital.service.AuthService;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
+
 /**
- * Professional login screen for the Hospital Appointment System.
+ * Login screen for the Hospital Appointment & Queue Management System.
  *
- * Module 1:
- * User Authentication & Role Management
+ * Layout:
+ * 30% - hospital branding
+ * 70% - authentication
  */
 public class LoginFrame extends JFrame {
 
@@ -35,277 +25,670 @@ public class LoginFrame extends JFrame {
     private JPasswordField passwordField;
     private JComboBox<String> roleComboBox;
 
-    private AuthService authService;
+    private final AuthService authService;
 
     public LoginFrame() {
 
         authService = new AuthService();
 
-        setTitle("Hospital Appointment System");
-
-        /*
-         * Open the application in full-screen/maximized mode.
-         */
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        setMinimumSize(new Dimension(1000, 650));
-
+        setTitle("Hospital Appointment & Queue Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setLocationRelativeTo(null);
+        setMinimumSize(
+                new Dimension(1100, 700)
+        );
 
-        createUI();
+        setExtendedState(
+                JFrame.MAXIMIZED_BOTH
+        );
+
+        buildUI();
+
+        setLocationRelativeTo(null);
     }
 
-    /**
-     * Creates the complete login interface.
-     */
-    private void createUI() {
+    // =========================================================
+    // MAIN LAYOUT
+    // =========================================================
 
-        JPanel mainPanel =
-                new JPanel(new BorderLayout());
+    private void buildUI() {
 
-        mainPanel.setBackground(
+        JPanel root =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        root.setBackground(
                 AppTheme.BACKGROUND
         );
 
-        /*
-         * -------------------------------------------------
-         * LEFT BRANDING PANEL
-         * -------------------------------------------------
-         */
-        JPanel brandingPanel =
-                new JPanel(new GridBagLayout());
+        // -----------------------------------------------------
+        // LEFT - 30%
+        // -----------------------------------------------------
 
-        brandingPanel.setBackground(
-                AppTheme.PRIMARY_DARK
-        );
-
-        brandingPanel.setPreferredSize(
-                new Dimension(430, 0)
-        );
-
-        GridBagConstraints brandGbc =
+        GridBagConstraints left =
                 new GridBagConstraints();
 
-        brandGbc.gridx = 0;
-        brandGbc.gridy = 0;
-        brandGbc.insets =
-                new Insets(10, 40, 10, 40);
-        brandGbc.anchor =
-                GridBagConstraints.CENTER;
+        left.gridx = 0;
+        left.gridy = 0;
+        left.weightx = 0.30;
+        left.weighty = 1.0;
+        left.fill = GridBagConstraints.BOTH;
 
-        JLabel hospitalIcon =
-                new JLabel("+");
+        // -----------------------------------------------------
+        // RIGHT - 70%
+        // -----------------------------------------------------
 
-        hospitalIcon.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        70
+        GridBagConstraints right =
+                new GridBagConstraints();
+
+        right.gridx = 1;
+        right.gridy = 0;
+        right.weightx = 0.70;
+        right.weighty = 1.0;
+        right.fill = GridBagConstraints.BOTH;
+
+        root.add(
+                createBrandSection(),
+                left
+        );
+
+        root.add(
+                createLoginSection(),
+                right
+        );
+
+        setContentPane(root);
+    }
+
+    // =========================================================
+    // BRAND SECTION
+    // =========================================================
+
+    private JPanel createBrandSection() {
+
+        JPanel brand =
+                AppTheme.createBrandPanel();
+
+        brand.setLayout(
+                new GridBagLayout()
+        );
+
+        // -----------------------------------------------------
+        // Fixed-width content column
+        // -----------------------------------------------------
+
+        JPanel content =
+                new JPanel();
+
+        content.setOpaque(false);
+
+        content.setLayout(
+                new BoxLayout(
+                        content,
+                        BoxLayout.Y_AXIS
                 )
         );
 
-        hospitalIcon.setForeground(
-                Color.WHITE
+        content.setPreferredSize(
+                new Dimension(
+                        290,
+                        440
+                )
         );
 
-        brandingPanel.add(
-                hospitalIcon,
-                brandGbc
-        );
+        // -----------------------------------------------------
+        // Logo
+        // -----------------------------------------------------
 
-        brandGbc.gridy++;
-
-        JLabel hospitalName =
+        JLabel logo =
                 new JLabel(
-                        "HOSPITAL+"
+                        new ImageIcon(
+                                createMedicalLogo(76)
+                        )
                 );
 
-        hospitalName.setFont(
+        logo.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        // -----------------------------------------------------
+        // Hospital title
+        // -----------------------------------------------------
+
+        JLabel title =
+                new JLabel(
+                        "<html>"
+                                + "Hospital Appointment<br>"
+                                + "&amp; Queue Management"
+                                + "</html>"
+                );
+
+        title.setFont(
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        34
+                        30      
                 )
         );
 
-        hospitalName.setForeground(
-                Color.WHITE
+        title.setForeground(
+                AppTheme.WHITE
         );
 
-        brandingPanel.add(
-                hospitalName,
-                brandGbc
+        title.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        brandGbc.gridy++;
+        // -----------------------------------------------------
+        // Tagline
+        // -----------------------------------------------------
 
         JLabel subtitle =
                 new JLabel(
-                        "<html><div style='text-align:center;'>"
-                                + "Appointment & Queue<br>"
-                                + "Management System"
-                                + "</div></html>"
+                        "<html>"
+                                + "Smarter care coordination.<br>"
+                                + "Better patient flow."
+                                + "</html>"
                 );
 
         subtitle.setFont(
-                AppTheme.BODY_FONT
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        19
+                )
         );
 
         subtitle.setForeground(
-                new Color(225, 235, 250)
-        );
-
-        brandingPanel.add(
-                subtitle,
-                brandGbc
-        );
-
-        brandGbc.gridy++;
-
-        JLabel description =
-                new JLabel(
-                        "<html><div style='text-align:center;'>"
-                                + "A simple and organized way to<br>"
-                                + "manage hospital appointments."
-                                + "</div></html>"
-                );
-
-        description.setFont(
-                AppTheme.SMALL_FONT
-        );
-
-        description.setForeground(
-                new Color(190, 210, 235)
-        );
-
-        brandingPanel.add(
-                description,
-                brandGbc
-        );
-
-        /*
-         * -------------------------------------------------
-         * RIGHT LOGIN AREA
-         * -------------------------------------------------
-         */
-        JPanel rightPanel =
-                new JPanel(
-                        new GridBagLayout()
-                );
-
-        rightPanel.setBackground(
-                AppTheme.BACKGROUND
-        );
-
-        JPanel loginCard =
-                new JPanel(
-                        new GridBagLayout()
-                );
-
-        loginCard.setBackground(
-                AppTheme.SURFACE
-        );
-
-        loginCard.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                AppTheme.BORDER
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                35, 45, 35, 45
-                        )
+                new Color(
+                        203,
+                        213,
+                        225
                 )
         );
+
+        subtitle.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        // -----------------------------------------------------
+        // Divider
+        // -----------------------------------------------------
+
+        JPanel divider =
+                new JPanel();
+
+        divider.setOpaque(true);
+
+        divider.setBackground(
+                new Color(
+                        59,
+                        130,
+                        246
+                )
+        );
+
+        divider.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        divider.setMaximumSize(
+                new Dimension(
+                        48,
+                        2
+                )
+        );
+
+        // -----------------------------------------------------
+        // Supporting text
+        // -----------------------------------------------------
+
+        JLabel supportingText =
+                new JLabel(
+                        "<html>"
+                                + "Secure access for patients,<br>"
+                                + "doctors and administrators."
+                                + "</html>"
+                );
+
+        supportingText.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        15
+                )
+        );
+
+        supportingText.setForeground(
+                new Color(
+                        148,
+                        163,
+                        184
+                )
+        );
+
+        supportingText.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        // -----------------------------------------------------
+        // Assemble with controlled spacing
+        // -----------------------------------------------------
+
+        content.add(
+                logo
+        );
+
+        content.add(
+                Box.createVerticalStrut(30)
+        );
+
+        content.add(
+                title
+        );
+
+        content.add(
+                Box.createVerticalStrut(16)
+        );
+
+        content.add(
+                subtitle
+        );
+
+        content.add(
+                Box.createVerticalStrut(26)
+        );
+
+        content.add(
+                divider
+        );
+
+        content.add(
+                Box.createVerticalStrut(20)
+        );
+
+        content.add(
+                supportingText
+        );
+
+        // -----------------------------------------------------
+        // Center the content column in the 30% panel
+        // -----------------------------------------------------
 
         GridBagConstraints gbc =
                 new GridBagConstraints();
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.fill =
-                GridBagConstraints.HORIZONTAL;
-        gbc.insets =
-                new Insets(5, 5, 5, 5);
 
-        JLabel welcomeLabel =
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+
+        gbc.anchor =
+                GridBagConstraints.CENTER;
+
+        gbc.fill =
+                GridBagConstraints.NONE;
+
+        brand.add(
+                content,
+                gbc
+        );
+
+        return brand;
+    }
+
+    // =========================================================
+    // MEDICAL LOGO
+    // =========================================================
+
+    private BufferedImage createMedicalLogo(
+            int size
+    ) {
+
+        BufferedImage image =
+                new BufferedImage(
+                        size,
+                        size,
+                        BufferedImage.TYPE_INT_ARGB
+                );
+
+        Graphics2D g =
+                image.createGraphics();
+
+        g.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON
+        );
+
+        g.setRenderingHint(
+                RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY
+        );
+
+        double center =
+                size / 2.0;
+
+        // -----------------------------------------------------
+        // Outer white circle
+        // -----------------------------------------------------
+
+        g.setColor(
+                new Color(
+                        255,
+                        255,
+                        255,
+                        245
+                )
+        );
+
+        g.fill(
+                new Ellipse2D.Double(
+                        2,
+                        2,
+                        size - 4,
+                        size - 4
+                )
+        );
+
+        // -----------------------------------------------------
+        // Inner navy/blue circle
+        // -----------------------------------------------------
+
+        g.setColor(
+                new Color(
+                        30,
+                        91,
+                        180
+                )
+        );
+
+        g.fill(
+                new Ellipse2D.Double(
+                        8,
+                        8,
+                        size - 16,
+                        size - 16
+                )
+        );
+
+        // -----------------------------------------------------
+        // Staff
+        // -----------------------------------------------------
+
+        g.setColor(
+                Color.WHITE
+        );
+
+        g.setStroke(
+                new BasicStroke(
+                        3.6f,
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND
+                )
+        );
+
+        g.draw(
+                new Line2D.Double(
+                        center,
+                        18,
+                        center,
+                        size - 16
+                )
+        );
+
+        // -----------------------------------------------------
+        // Snake
+        // -----------------------------------------------------
+
+        Path2D snake =
+                new Path2D.Double();
+
+        snake.moveTo(
+                center + 1,
+                22
+        );
+
+        snake.curveTo(
+                center - 12,
+                24,
+                center - 14,
+                32,
+                center - 3,
+                38
+        );
+
+        snake.curveTo(
+                center + 10,
+                45,
+                center + 11,
+                53,
+                center + 1,
+                59
+        );
+
+        snake.curveTo(
+                center - 10,
+                66,
+                center - 11,
+                74,
+                center - 2,
+                80
+        );
+
+        snake.curveTo(
+                center + 4,
+                84,
+                center + 5,
+                87,
+                center + 3,
+                89
+        );
+
+        g.setStroke(
+                new BasicStroke(
+                        3.2f,
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND
+                )
+        );
+
+        g.draw(snake);
+
+        // -----------------------------------------------------
+        // Snake head
+        // -----------------------------------------------------
+
+        g.fill(
+                new Ellipse2D.Double(
+                        center - 2,
+                        19,
+                        6,
+                        6
+                )
+        );
+
+        // -----------------------------------------------------
+        // Small cross
+        // -----------------------------------------------------
+
+        g.setStroke(
+                new BasicStroke(
+                        1.8f,
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND
+                )
+        );
+
+        g.draw(
+                new Line2D.Double(
+                        center - 6,
+                        16,
+                        center + 6,
+                        16
+                )
+        );
+
+        g.dispose();
+
+        return image;
+    }
+
+    // =========================================================
+    // LOGIN SECTION
+    // =========================================================
+
+    private JPanel createLoginSection() {
+
+        JPanel section =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        section.setBackground(
+                AppTheme.BACKGROUND
+        );
+
+        // -----------------------------------------------------
+        // Login card
+        // -----------------------------------------------------
+
+        JPanel card =
+                new JPanel();
+
+        card.setBackground(
+                AppTheme.WHITE
+        );
+
+        card.setLayout(
+                new BoxLayout(
+                        card,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+        card.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                AppTheme.BORDER,
+                                1
+                        ),
+                        new EmptyBorder(
+                                44,
+                                50,
+                                44,
+                                50
+                        )
+                )
+        );
+
+        card.setPreferredSize(
+                new Dimension(
+                        500,
+                        560
+                )
+        );
+
+        card.setMaximumSize(
+                new Dimension(
+                        540,
+                        600
+                )
+        );
+
+        // -----------------------------------------------------
+        // Heading
+        // -----------------------------------------------------
+
+        JLabel eyebrow =
+                new JLabel(
+                        "SECURE ACCESS"
+                );
+
+        eyebrow.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
+        );
+
+        eyebrow.setForeground(
+                AppTheme.BLUE
+        );
+
+        eyebrow.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        JLabel heading =
                 new JLabel(
                         "Welcome back"
                 );
 
-        welcomeLabel.setFont(
-                AppTheme.TITLE_FONT
+        heading.setFont(
+                AppTheme.FONT_DISPLAY
         );
 
-        welcomeLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
+        heading.setForeground(
+                AppTheme.TEXT
         );
 
-        loginCard.add(
-                welcomeLabel,
-                gbc
+        heading.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        gbc.gridy++;
-
-        JLabel instructionLabel =
+        JLabel description =
                 new JLabel(
-                        "Sign in to continue to your dashboard"
+                        "Sign in to continue to your dashboard."
                 );
 
-        instructionLabel.setFont(
-                AppTheme.BODY_FONT
+        description.setFont(
+                AppTheme.FONT_BODY
         );
 
-        instructionLabel.setForeground(
+        description.setForeground(
                 AppTheme.TEXT_SECONDARY
         );
 
-        gbc.insets =
-                new Insets(
-                        0, 5, 25, 5
-                );
-
-        loginCard.add(
-                instructionLabel,
-                gbc
+        description.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        /*
-         * Username label
-         */
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-
-        gbc.insets =
-                new Insets(
-                        8, 5, 5, 5
-                );
-
-        JLabel usernameLabel =
-                new JLabel("Username");
-
-        usernameLabel.setFont(
-                AppTheme.SUBHEADING_FONT
+        card.add(
+                eyebrow
         );
 
-        usernameLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
+        card.add(
+                Box.createVerticalStrut(8)
         );
 
-        loginCard.add(
-                usernameLabel,
-                gbc
+        card.add(
+                heading
         );
 
-        /*
-         * Username field
-         */
-        gbc.gridy++;
+        card.add(
+                Box.createVerticalStrut(7)
+        );
 
-        gbc.gridwidth = 2;
+        card.add(
+                description
+        );
+
+        card.add(
+                Box.createVerticalStrut(34)
+        );
+
+        // -----------------------------------------------------
+        // Username
+        // -----------------------------------------------------
+
+        card.add(
+                createFieldLabel(
+                        "Username"
+                )
+        );
 
         usernameField =
                 new JTextField();
@@ -314,40 +697,27 @@ public class LoginFrame extends JFrame {
                 usernameField
         );
 
-        loginCard.add(
-                usernameField,
-                gbc
+        usernameField.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        /*
-         * Password label
-         */
-        gbc.gridy++;
-
-        gbc.gridwidth = 1;
-
-        JLabel passwordLabel =
-                new JLabel("Password");
-
-        passwordLabel.setFont(
-                AppTheme.SUBHEADING_FONT
+        card.add(
+                usernameField
         );
 
-        passwordLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
+        card.add(
+                Box.createVerticalStrut(20)
         );
 
-        loginCard.add(
-                passwordLabel,
-                gbc
+        // -----------------------------------------------------
+        // Password
+        // -----------------------------------------------------
+
+        card.add(
+                createFieldLabel(
+                        "Password"
+                )
         );
-
-        /*
-         * Password field
-         */
-        gbc.gridy++;
-
-        gbc.gridwidth = 2;
 
         passwordField =
                 new JPasswordField();
@@ -356,40 +726,27 @@ public class LoginFrame extends JFrame {
                 passwordField
         );
 
-        loginCard.add(
-                passwordField,
-                gbc
+        passwordField.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        /*
-         * Role label
-         */
-        gbc.gridy++;
-
-        gbc.gridwidth = 1;
-
-        JLabel roleLabel =
-                new JLabel("Role");
-
-        roleLabel.setFont(
-                AppTheme.SUBHEADING_FONT
+        card.add(
+                passwordField
         );
 
-        roleLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
+        card.add(
+                Box.createVerticalStrut(20)
         );
 
-        loginCard.add(
-                roleLabel,
-                gbc
+        // -----------------------------------------------------
+        // Role
+        // -----------------------------------------------------
+
+        card.add(
+                createFieldLabel(
+                        "Sign in as"
+                )
         );
-
-        /*
-         * Role selector
-         */
-        gbc.gridy++;
-
-        gbc.gridwidth = 2;
 
         roleComboBox =
                 new JComboBox<>(
@@ -400,169 +757,188 @@ public class LoginFrame extends JFrame {
                         }
                 );
 
-        roleComboBox.setFont(
-                AppTheme.BODY_FONT
+        AppTheme.styleComboBox(
+                roleComboBox
         );
 
-        roleComboBox.setBackground(
-                Color.WHITE
+        roleComboBox.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        roleComboBox.setPreferredSize(
+        card.add(
+                roleComboBox
+        );
+
+        card.add(
+                Box.createVerticalStrut(30)
+        );
+
+        // -----------------------------------------------------
+        // Sign in
+        // -----------------------------------------------------
+
+        JButton loginButton =
+                AppTheme.primaryButton(
+                        "Sign In"
+                );
+
+        loginButton.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        loginButton.setMaximumSize(
                 new Dimension(
-                        0,
-                        42
+                        Integer.MAX_VALUE,
+                        AppTheme.BUTTON_HEIGHT
                 )
         );
 
-        loginCard.add(
-                roleComboBox,
-                gbc
+        loginButton.addActionListener(
+                e -> handleLogin()
         );
 
-        /*
-         * Login button
-         */
-        gbc.gridy++;
-
-        gbc.insets =
-                new Insets(
-                        25, 5, 8, 5
-                );
-
-        JButton loginButton =
-                new JButton("Sign In");
-
-        AppTheme.styleButton(
+        card.add(
                 loginButton
         );
 
-        loginCard.add(
-                loginButton,
-                gbc
+        card.add(
+                Box.createVerticalStrut(12)
         );
 
-        /*
-         * Registration area
-         */
-        gbc.gridy++;
-
-        JPanel registerPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.CENTER,
-                                5,
-                                0
-                        )
-                );
-
-        registerPanel.setOpaque(
-                false
-        );
-
-        JLabel registerText =
-                new JLabel(
-                        "New patient?"
-                );
-
-        registerText.setFont(
-                AppTheme.SMALL_FONT
-        );
-
-        registerText.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
+        // -----------------------------------------------------
+        // Register
+        // -----------------------------------------------------
 
         JButton registerButton =
-                new JButton(
-                        "Create an account"
+                AppTheme.secondaryButton(
+                        "Create Patient Account"
                 );
 
-        registerButton.setFont(
-                AppTheme.SMALL_FONT
+        registerButton.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        registerButton.setForeground(
-                AppTheme.PRIMARY
-        );
-
-        registerButton.setBackground(
-                Color.WHITE
-        );
-
-        registerButton.setBorder(
-                BorderFactory.createEmptyBorder(
-                        5, 5, 5, 5
+        registerButton.setMaximumSize(
+                new Dimension(
+                        Integer.MAX_VALUE,
+                        AppTheme.BUTTON_HEIGHT
                 )
-        );
-
-        registerButton.setFocusPainted(
-                false
-        );
-
-        registerButton.setCursor(
-                new java.awt.Cursor(
-                        java.awt.Cursor.HAND_CURSOR
-                )
-        );
-
-        registerPanel.add(
-                registerText
-        );
-
-        registerPanel.add(
-                registerButton
-        );
-
-        loginCard.add(
-                registerPanel,
-                gbc
-        );
-
-        rightPanel.add(
-                loginCard
-        );
-
-        mainPanel.add(
-                brandingPanel,
-                BorderLayout.WEST
-        );
-
-        mainPanel.add(
-                rightPanel,
-                BorderLayout.CENTER
-        );
-
-        add(mainPanel);
-
-        /*
-         * -------------------------------------------------
-         * BUTTON ACTIONS
-         * -------------------------------------------------
-         */
-
-        loginButton.addActionListener(
-                e -> login()
         );
 
         registerButton.addActionListener(
                 e -> openRegistration()
         );
 
-        /*
-         * Allow pressing Enter to log in.
-         */
-        getRootPane().setDefaultButton(
-                loginButton
+        card.add(
+                registerButton
         );
+
+        card.add(
+                Box.createVerticalGlue()
+        );
+
+        // -----------------------------------------------------
+        // Footer
+        // -----------------------------------------------------
+
+        JLabel footer =
+                new JLabel(
+                        "Secure hospital access"
+                );
+
+        footer.setFont(
+                AppTheme.FONT_SMALL
+        );
+
+        footer.setForeground(
+                AppTheme.TEXT_MUTED
+        );
+
+        footer.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        card.add(
+                footer
+        );
+
+        // -----------------------------------------------------
+        // Center card
+        // -----------------------------------------------------
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+
+        gbc.fill =
+                GridBagConstraints.NONE;
+
+        gbc.anchor =
+                GridBagConstraints.CENTER;
+
+        gbc.insets =
+                new Insets(
+                        30,
+                        60,
+                        30,
+                        60
+                );
+
+        section.add(
+                card,
+                gbc
+        );
+
+        return section;
     }
 
-    /**
-     * Attempts to authenticate the user.
-     *
-     * The authentication logic itself is unchanged.
-     */
-    private void login() {
+    // =========================================================
+    // FIELD LABEL
+    // =========================================================
+
+    private JLabel createFieldLabel(
+            String text
+    ) {
+
+        JLabel label =
+                new JLabel(
+                        text
+                );
+
+        label.setFont(
+                AppTheme.FONT_BODY_BOLD
+        );
+
+        label.setForeground(
+                AppTheme.TEXT
+        );
+
+        label.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        label.setBorder(
+                new EmptyBorder(
+                        0,
+                        0,
+                        7,
+                        0
+                )
+        );
+
+        return label;
+    }
+
+    // =========================================================
+    // LOGIN LOGIC
+    // =========================================================
+
+    private void handleLogin() {
 
         String username =
                 usernameField
@@ -576,20 +952,33 @@ public class LoginFrame extends JFrame {
                 );
 
         String selectedRole =
-                (String)
+                String.valueOf(
                         roleComboBox
-                                .getSelectedItem();
+                                .getSelectedItem()
+                );
 
-        if (username.isEmpty()
-                || password.isEmpty()) {
+        if (username.isEmpty()) {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Please enter your username "
-                            + "and password.",
-                    "Missing Information",
+            showMessage(
+                    "Please enter your username.",
+                    "Login Required",
                     JOptionPane.WARNING_MESSAGE
             );
+
+            usernameField.requestFocus();
+
+            return;
+        }
+
+        if (password.isEmpty()) {
+
+            showMessage(
+                    "Please enter your password.",
+                    "Login Required",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            passwordField.requestFocus();
 
             return;
         }
@@ -602,89 +991,161 @@ public class LoginFrame extends JFrame {
                             password
                     );
 
-            if (!user.getRole()
-                    .equals(selectedRole)) {
+            if (user == null) {
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "The selected role does not "
-                                + "match your account role.",
-                        "Invalid Role",
+                showMessage(
+                        "Invalid username or password.",
+                        "Login Failed",
                         JOptionPane.ERROR_MESSAGE
                 );
 
                 return;
             }
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Login successful!\n"
-                            + "Welcome, "
-                            + user.getFullName()
-                            + "\nRole: "
-                            + user.getRole(),
-                    "Login Successful",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            if (!user.getRole()
+                    .equalsIgnoreCase(
+                            selectedRole
+                    )) {
 
-            openRoleDashboard(user);
+                showMessage(
+                        "The selected role does not match "
+                                + "this account.",
+                        "Role Mismatch",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                return;
+            }
+
+            openDashboard(user);
 
         } catch (
-                InvalidCredentialsException ex) {
+                InvalidCredentialsException e
+        ) {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    ex.getMessage(),
+            showMessage(
+                    e.getMessage(),
                     "Login Failed",
                     JOptionPane.ERROR_MESSAGE
             );
 
-        } catch (
-                RuntimeException ex) {
+        } catch (Exception e) {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Unable to connect to the database.\n\n"
-                            + ex.getMessage(),
-                    "Database Error",
+            e.printStackTrace();
+
+            showMessage(
+                    "Unable to connect to the hospital system.\n\n"
+                            + e.getMessage(),
+                    "System Error",
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    /**
-     * Opens the patient registration screen.
-     */
-    private void openRegistration() {
+    // =========================================================
+    // DASHBOARD ROUTING
+    // =========================================================
 
-        RegisterFrame registerFrame =
-                new RegisterFrame();
-
-        registerFrame.setVisible(true);
+    private void openDashboard(
+            User user
+    ) {
 
         dispose();
-    }
-
-    /**
-     * Opens the appropriate dashboard.
-     */
-    private void openRoleDashboard(
-            User user) {
 
         String role =
-                user.getRole();
+                user.getRole()
+                        .toUpperCase();
 
-        if ("PATIENT".equals(role)) {
+        switch (role) {
 
-            new PatientDashboard(user)
-                    .setVisible(true);
+            case "PATIENT":
 
-        } else {
+                new PatientDashboard(
+                        user
+                ).setVisible(true);
 
-            new RoleDashboard(user)
-                    .setVisible(true);
+                break;
+
+            case "DOCTOR":
+            case "ADMIN":
+
+                new RoleDashboard(
+                        user
+                ).setVisible(true);
+
+                break;
+
+            default:
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Unknown user role: "
+                                + user.getRole(),
+                        "System Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                new LoginFrame()
+                        .setVisible(true);
+
+                break;
         }
+    }
+
+    // =========================================================
+    // REGISTRATION
+    // =========================================================
+
+    private void openRegistration() {
 
         dispose();
+
+        new RegisterFrame()
+                .setVisible(true);
+    }
+
+    // =========================================================
+    // MESSAGE
+    // =========================================================
+
+    private void showMessage(
+            String message,
+            String title,
+            int messageType
+    ) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                title,
+                messageType
+        );
+    }
+
+    // =========================================================
+    // MAIN
+    // =========================================================
+
+    public static void main(
+            String[] args
+    ) {
+
+        SwingUtilities.invokeLater(
+                () -> {
+
+                    try {
+
+                        UIManager.setLookAndFeel(
+                                UIManager
+                                        .getSystemLookAndFeelClassName()
+                        );
+
+                    } catch (Exception ignored) {
+                    }
+
+                    new LoginFrame()
+                            .setVisible(true);
+                }
+        );
     }
 }

@@ -1,159 +1,160 @@
 package com.hospital.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-
 import com.hospital.model.User;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 /**
- * Professional appointment history screen.
- *
- * Displays appointments belonging to the logged-in patient.
+ * Patient appointment history and queue status screen.
  */
 public class AppointmentHistoryFrame extends JFrame {
 
-    private User patient;
-
-    private JTable appointmentTable;
-
-    private DefaultTableModel tableModel;
+    private final User user;
 
     private static final String DB_URL =
-            "jdbc:mysql://localhost:3306/hospital_queue_db"
-                    + "?useSSL=false&serverTimezone=Asia/Kolkata"
-                    + "&allowPublicKeyRetrieval=true";
+            "jdbc:mysql://localhost:3306/hospital_queue_v2"
+            + "?useSSL=false&serverTimezone=Asia/Kolkata"
+            + "&allowPublicKeyRetrieval=true";
 
     private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "Jasmin@2008";
 
-    private static final String DB_PASSWORD =
-            "Jasmin@2008";
+    private JTable appointmentTable;
+    private DefaultTableModel tableModel;
 
-    public AppointmentHistoryFrame(User patient) {
+    private JLabel totalLabel;
+    private JLabel upcomingLabel;
+    private JLabel completedLabel;
 
-        this.patient = patient;
+    public AppointmentHistoryFrame(User user) {
+
+        this.user = user;
 
         setTitle(
-                "Hospital Appointment System - My Appointments"
+                "My Appointments - Hospital Care Portal"
+        );
+
+        setDefaultCloseOperation(
+                JFrame.DISPOSE_ON_CLOSE
+        );
+
+        setMinimumSize(
+                new Dimension(1200, 720)
         );
 
         setExtendedState(
                 JFrame.MAXIMIZED_BOTH
         );
 
-        setMinimumSize(
-                new Dimension(1100, 700)
-        );
-
-        setDefaultCloseOperation(
-                JFrame.EXIT_ON_CLOSE
-        );
-
-        setLocationRelativeTo(null);
-
-        createUI();
+        buildUI();
 
         loadAppointments();
+
+        setLocationRelativeTo(null);
     }
 
-    /**
-     * Creates the professional appointment history interface.
-     */
-    private void createUI() {
+    // =========================================================
+    // BUILD UI
+    // =========================================================
 
-        JPanel mainPanel =
-                new JPanel(new BorderLayout());
+    private void buildUI() {
 
-        mainPanel.setBackground(
-                AppTheme.BACKGROUND
-        );
-
-        /*
-         * =================================================
-         * SIDEBAR
-         * =================================================
-         */
-
-        JPanel sidebar =
+        JPanel root =
                 new JPanel(
                         new BorderLayout()
                 );
 
+        root.setBackground(
+                AppTheme.BACKGROUND
+        );
+
+        root.add(
+                createSidebar(),
+                BorderLayout.WEST
+        );
+
+        root.add(
+                createMainContent(),
+                BorderLayout.CENTER
+        );
+
+        setContentPane(root);
+    }
+
+    // =========================================================
+    // SIDEBAR
+    // =========================================================
+
+    private JPanel createSidebar() {
+
+        JPanel sidebar =
+                new JPanel();
+
         sidebar.setBackground(
-                AppTheme.PRIMARY_DARK
+                AppTheme.NAVY
         );
 
         sidebar.setPreferredSize(
-                new Dimension(250, 0)
+                new Dimension(260, 0)
         );
 
-        /*
-         * Branding.
-         */
-
-        JPanel brandPanel =
-                new JPanel(
-                        new java.awt.GridBagLayout()
-                );
-
-        brandPanel.setBackground(
-                AppTheme.PRIMARY_DARK
-        );
-
-        java.awt.GridBagConstraints brandGbc =
-                new java.awt.GridBagConstraints();
-
-        brandGbc.gridx = 0;
-        brandGbc.gridy = 0;
-
-        brandGbc.insets =
-                new java.awt.Insets(
-                        25, 10, 5, 10
-                );
-
-        JLabel logo =
-                new JLabel("+");
-
-        logo.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        42
+        sidebar.setBorder(
+                new EmptyBorder(
+                        28,
+                        22,
+                        24,
+                        22
                 )
         );
 
+        sidebar.setLayout(
+                new BoxLayout(
+                        sidebar,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+        JPanel brand =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT,
+                                0,
+                                0
+                        )
+                );
+
+        brand.setOpaque(false);
+
+        JLabel logo =
+                new JLabel("H");
+
+        logo.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
+        logo.setVerticalAlignment(
+                SwingConstants.CENTER
+        );
+
         logo.setForeground(
-                Color.WHITE
+                AppTheme.WHITE
         );
 
-        brandPanel.add(
-                logo,
-                brandGbc
+        logo.setBackground(
+                AppTheme.BLUE
         );
 
-        brandGbc.gridy++;
+        logo.setOpaque(true);
 
-        JLabel brandName =
-                new JLabel("HOSPITAL+");
-
-        brandName.setFont(
+        logo.setFont(
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
@@ -161,268 +162,598 @@ public class AppointmentHistoryFrame extends JFrame {
                 )
         );
 
-        brandName.setForeground(
-                Color.WHITE
+        logo.setPreferredSize(
+                new Dimension(46, 46)
         );
 
-        brandPanel.add(
-                brandName,
-                brandGbc
-        );
-
-        brandGbc.gridy++;
-
-        JLabel portalLabel =
+        JLabel brandText =
                 new JLabel(
-                        "Patient Portal"
+                        "<html><b>Hospital</b><br>"
+                        + "<span style='font-size:9px'>CARE PORTAL</span></html>"
                 );
 
-        portalLabel.setFont(
-                AppTheme.SMALL_FONT
+        brandText.setForeground(
+                AppTheme.WHITE
         );
 
-        portalLabel.setForeground(
-                new Color(
-                        190, 210, 235
+        brandText.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        17
                 )
         );
 
-        brandPanel.add(
-                portalLabel,
-                brandGbc
+        brandText.setBorder(
+                new EmptyBorder(
+                        0,
+                        13,
+                        0,
+                        0
+                )
         );
+
+        brand.add(logo);
+        brand.add(brandText);
+
+        sidebar.add(brand);
 
         sidebar.add(
-                brandPanel,
-                BorderLayout.NORTH
+                Box.createVerticalStrut(45)
         );
 
-        /*
-         * Navigation.
-         */
+        JLabel menuTitle =
+                new JLabel("PATIENT MENU");
 
-        JPanel navigationPanel =
-                new JPanel(
-                        new java.awt.GridLayout(
-                                4,
-                                1,
-                                0,
-                                8
-                        )
-                );
-
-        navigationPanel.setBackground(
-                AppTheme.PRIMARY_DARK
-        );
-
-        navigationPanel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        30,
-                        15,
-                        20,
-                        15
+        menuTitle.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
                 )
         );
 
-        JButton dashboardButton =
-                createSidebarButton(
-                        "Dashboard"
-                );
-
-        JButton bookingButton =
-                createSidebarButton(
-                        "Book Appointment"
-                );
-
-        JButton historyButton =
-                createSidebarButton(
-                        "My Appointments"
-                );
-
-        JButton logoutButton =
-                createSidebarButton(
-                        "Logout"
-                );
-
-        navigationPanel.add(
-                dashboardButton
+        menuTitle.setForeground(
+                new Color(148, 163, 184)
         );
 
-        navigationPanel.add(
-                bookingButton
+        menuTitle.setBorder(
+                new EmptyBorder(
+                        0,
+                        10,
+                        12,
+                        0
+                )
         );
 
-        navigationPanel.add(
-                historyButton
+        menuTitle.setAlignmentX(
+                Component.LEFT_ALIGNMENT
         );
 
-        navigationPanel.add(
-                logoutButton
+        sidebar.add(menuTitle);
+
+        JButton dashboard =
+                createNavButton(
+                        "▣   Dashboard",
+                        false
+                );
+
+        dashboard.addActionListener(
+                e -> openDashboard()
         );
+
+        sidebar.add(dashboard);
+
+        JButton appointments =
+                createNavButton(
+                        "▤   My Appointments",
+                        true
+                );
+
+        sidebar.add(appointments);
+
+        JButton booking =
+                createNavButton(
+                        "＋   Book Appointment",
+                        false
+                );
+
+        booking.addActionListener(
+                e -> openBooking()
+        );
+
+        sidebar.add(booking);
+
+        JButton records =
+                createNavButton(
+                        "▥   Medical Records",
+                        false
+                );
+
+        records.addActionListener(
+                e -> JOptionPane.showMessageDialog(
+                        this,
+                        "Medical records will be connected "
+                        + "to the completed consultation workflow.",
+                        "Medical Records",
+                        JOptionPane.INFORMATION_MESSAGE
+                )
+        );
+
+        sidebar.add(records);
 
         sidebar.add(
-                navigationPanel,
-                BorderLayout.CENTER
+                Box.createVerticalGlue()
         );
 
-        /*
-         * =================================================
-         * MAIN CONTENT
-         * =================================================
-         */
-
-        JPanel contentPanel =
-                new JPanel(
-                        new BorderLayout(
-                                20,
-                                20
-                        )
+        JButton profile =
+                createNavButton(
+                        "◉   My Profile",
+                        false
                 );
 
-        contentPanel.setBackground(
-                AppTheme.BACKGROUND
+        profile.addActionListener(
+                e -> showProfile()
         );
 
-        contentPanel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        30,
-                        35,
-                        30,
-                        35
+        sidebar.add(profile);
+
+        JButton logout =
+                createNavButton(
+                        "↪   Sign Out",
+                        false
+                );
+
+        logout.addActionListener(
+                e -> logout()
+        );
+
+        sidebar.add(logout);
+
+        return sidebar;
+    }
+
+    private JButton createNavButton(
+            String text,
+            boolean selected) {
+
+        JButton button =
+                new JButton(text);
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        14
                 )
         );
 
-        /*
-         * Header.
-         */
+        button.setForeground(
+                selected
+                        ? AppTheme.WHITE
+                        : new Color(203, 213, 225)
+        );
 
-        JPanel headerPanel =
+        button.setBackground(
+                selected
+                        ? new Color(30, 64, 175)
+                        : AppTheme.NAVY
+        );
+
+        button.setHorizontalAlignment(
+                SwingConstants.LEFT
+        );
+
+        button.setBorder(
+                new EmptyBorder(
+                        13,
+                        14,
+                        13,
+                        14
+                )
+        );
+
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+
+        button.setMaximumSize(
+                new Dimension(
+                        Integer.MAX_VALUE,
+                        48
+                )
+        );
+
+        return button;
+    }
+
+    // =========================================================
+    // MAIN CONTENT
+    // =========================================================
+
+    private JPanel createMainContent() {
+
+        JPanel main =
                 new JPanel(
                         new BorderLayout()
                 );
 
-        headerPanel.setOpaque(
-                false
+        main.setBackground(
+                AppTheme.BACKGROUND
         );
 
-        JPanel headingPanel =
+        main.add(
+                createHeader(),
+                BorderLayout.NORTH
+        );
+
+        main.add(
+                createContent(),
+                BorderLayout.CENTER
+        );
+
+        return main;
+    }
+
+    // =========================================================
+    // HEADER
+    // =========================================================
+
+    private JPanel createHeader() {
+
+        JPanel header =
                 new JPanel(
-                        new java.awt.GridLayout(
-                                2,
-                                1
-                        )
+                        new BorderLayout()
                 );
 
-        headingPanel.setOpaque(
-                false
+        header.setBackground(
+                AppTheme.WHITE
         );
 
-        JLabel titleLabel =
+        header.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(
+                                0,
+                                0,
+                                1,
+                                0,
+                                AppTheme.BORDER
+                        ),
+                        new EmptyBorder(
+                                20,
+                                32,
+                                20,
+                                32
+                        )
+                )
+        );
+
+        JLabel title =
                 new JLabel(
                         "My Appointments"
                 );
 
+        title.setFont(
+                AppTheme.FONT_H2
+        );
+
+        title.setForeground(
+                AppTheme.TEXT
+        );
+
+        JLabel patient =
+                new JLabel(
+                        user.getFullName()
+                );
+
+        patient.setFont(
+                AppTheme.FONT_BODY_BOLD
+        );
+
+        patient.setForeground(
+                AppTheme.TEXT_SECONDARY
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        header.add(
+                patient,
+                BorderLayout.EAST
+        );
+
+        return header;
+    }
+
+    // =========================================================
+    // CONTENT
+    // =========================================================
+
+    private JPanel createContent() {
+
+        JPanel wrapper =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        wrapper.setOpaque(false);
+
+        wrapper.setBorder(
+                new EmptyBorder(
+                        30,
+                        32,
+                        30,
+                        32
+                )
+        );
+
+        JPanel content =
+                new JPanel(
+                        new BorderLayout(
+                                0,
+                                22
+                        )
+                );
+
+        content.setOpaque(false);
+
+        content.add(
+                createStats(),
+                BorderLayout.NORTH
+        );
+
+        content.add(
+                createTableCard(),
+                BorderLayout.CENTER
+        );
+
+        wrapper.add(
+                content,
+                BorderLayout.CENTER
+        );
+
+        return wrapper;
+    }
+
+    // =========================================================
+    // STAT CARDS
+    // =========================================================
+
+    private JPanel createStats() {
+
+        JPanel stats =
+                new JPanel(
+                        new GridLayout(
+                                1,
+                                3,
+                                18,
+                                0
+                        )
+                );
+
+        stats.setOpaque(false);
+
+        totalLabel =
+                new JLabel("0");
+
+        upcomingLabel =
+                new JLabel("0");
+
+        completedLabel =
+                new JLabel("0");
+
+        stats.add(
+                createStatCard(
+                        "TOTAL APPOINTMENTS",
+                        totalLabel,
+                        "All your appointments"
+                )
+        );
+
+        stats.add(
+                createStatCard(
+                        "UPCOMING",
+                        upcomingLabel,
+                        "Scheduled visits"
+                )
+        );
+
+        stats.add(
+                createStatCard(
+                        "COMPLETED",
+                        completedLabel,
+                        "Finished consultations"
+                )
+        );
+
+        return stats;
+    }
+
+    private JPanel createStatCard(
+            String title,
+            JLabel valueLabel,
+            String subtitle) {
+
+        JPanel card =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        card.setBackground(
+                AppTheme.WHITE
+        );
+
+        card.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                AppTheme.BORDER,
+                                1
+                        ),
+                        new EmptyBorder(
+                                20,
+                                22,
+                                20,
+                                22
+                        )
+                )
+        );
+
+        JLabel titleLabel =
+                new JLabel(title);
+
         titleLabel.setFont(
-                AppTheme.TITLE_FONT
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
         );
 
         titleLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
+                AppTheme.TEXT_SECONDARY
+        );
+
+        valueLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        30
+                )
+        );
+
+        valueLabel.setForeground(
+                AppTheme.BLUE
         );
 
         JLabel subtitleLabel =
-                new JLabel(
-                        "View and track your scheduled "
-                                + "hospital appointments."
-                );
+                new JLabel(subtitle);
 
         subtitleLabel.setFont(
-                AppTheme.BODY_FONT
+                AppTheme.FONT_SMALL
         );
 
         subtitleLabel.setForeground(
                 AppTheme.TEXT_SECONDARY
         );
 
-        headingPanel.add(
-                titleLabel
+        JPanel center =
+                new JPanel();
+
+        center.setOpaque(false);
+
+        center.setLayout(
+                new BoxLayout(
+                        center,
+                        BoxLayout.Y_AXIS
+                )
         );
 
-        headingPanel.add(
+        center.add(valueLabel);
+
+        center.add(
                 subtitleLabel
         );
 
-        headerPanel.add(
-                headingPanel,
-                BorderLayout.WEST
-        );
-
-        /*
-         * Patient information.
-         */
-
-        JLabel patientLabel =
-                new JLabel(
-                        "Patient: "
-                                + patient.getFullName()
-                );
-
-        patientLabel.setFont(
-                AppTheme.SUBHEADING_FONT
-        );
-
-        patientLabel.setForeground(
-                AppTheme.PRIMARY
-        );
-
-        headerPanel.add(
-                patientLabel,
-                BorderLayout.EAST
-        );
-
-        contentPanel.add(
-                headerPanel,
+        card.add(
+                titleLabel,
                 BorderLayout.NORTH
         );
 
-        /*
-         * =================================================
-         * APPOINTMENT TABLE CARD
-         * =================================================
-         */
-
-        JPanel tableCard =
-                new JPanel(
-                        new BorderLayout()
-                );
-
-        tableCard.setBackground(
-                AppTheme.SURFACE
+        card.add(
+                center,
+                BorderLayout.CENTER
         );
 
-        tableCard.setBorder(
+        return card;
+    }
+
+    // =========================================================
+    // TABLE
+    // =========================================================
+
+    private JPanel createTableCard() {
+
+        JPanel card =
+                new JPanel(
+                        new BorderLayout(
+                                0,
+                                16
+                        )
+                );
+
+        card.setBackground(
+                AppTheme.WHITE
+        );
+
+        card.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(
-                                AppTheme.BORDER
+                                AppTheme.BORDER,
+                                1
                         ),
-                        BorderFactory.createEmptyBorder(
-                                20,
-                                20,
-                                20,
-                                20
+                        new EmptyBorder(
+                                22,
+                                22,
+                                22,
+                                22
                         )
                 )
         );
 
+        JPanel heading =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        heading.setOpaque(false);
+
+        JLabel title =
+                new JLabel(
+                        "Appointment history"
+                );
+
+        title.setFont(
+                AppTheme.FONT_H2
+        );
+
+        title.setForeground(
+                AppTheme.TEXT
+        );
+
+        JButton refresh =
+                AppTheme.secondaryButton(
+                        "Refresh"
+                );
+
+        refresh.addActionListener(
+                e -> loadAppointments()
+        );
+
+        heading.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        heading.add(
+                refresh,
+                BorderLayout.EAST
+        );
+
+        card.add(
+                heading,
+                BorderLayout.NORTH
+        );
+
         String[] columns = {
-                "Appointment ID",
-                "Doctor",
-                "Department",
-                "Date",
-                "Time",
-                "Symptoms",
-                "Emergency",
-                "Status"
+                "ID",
+                "DOCTOR",
+                "DEPARTMENT",
+                "DATE",
+                "TIME",
+                "QUEUE",
+                "EMERGENCY",
+                "STATUS"
         };
 
         tableModel =
@@ -445,54 +776,59 @@ public class AppointmentHistoryFrame extends JFrame {
                         tableModel
                 );
 
+        appointmentTable.setRowHeight(48);
+
         appointmentTable.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        appointmentTable.setRowHeight(
-                38
-        );
-
-        appointmentTable.setShowGrid(
-                false
-        );
-
-        appointmentTable.setIntercellSpacing(
-                new Dimension(
-                        0,
-                        0
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
                 )
+        );
+
+        appointmentTable.setForeground(
+                AppTheme.TEXT
+        );
+
+        appointmentTable.setBackground(
+                AppTheme.WHITE
+        );
+
+        appointmentTable.setGridColor(
+                new Color(226, 232, 240)
         );
 
         appointmentTable.setSelectionBackground(
-                new Color(
-                        225,
-                        238,
-                        252
-                )
+                new Color(239, 246, 255)
         );
 
         appointmentTable.setSelectionForeground(
-                AppTheme.TEXT_PRIMARY
+                AppTheme.TEXT
         );
 
-        /*
-         * Table header styling.
-         */
+        appointmentTable.setShowVerticalLines(false);
+
+        appointmentTable.setIntercellSpacing(
+                new Dimension(0, 1)
+        );
 
         appointmentTable.getTableHeader()
                 .setFont(
-                        AppTheme.SUBHEADING_FONT
-                );
-
-        appointmentTable.getTableHeader()
-                .setBackground(
-                        AppTheme.PRIMARY_DARK
+                        new Font(
+                                "Segoe UI",
+                                Font.BOLD,
+                                12
+                        )
                 );
 
         appointmentTable.getTableHeader()
                 .setForeground(
-                        Color.WHITE
+                        AppTheme.TEXT_SECONDARY
+                );
+
+        appointmentTable.getTableHeader()
+                .setBackground(
+                        new Color(248, 250, 252)
                 );
 
         appointmentTable.getTableHeader()
@@ -503,292 +839,150 @@ public class AppointmentHistoryFrame extends JFrame {
                         )
                 );
 
-        /*
-         * Center selected columns.
-         */
-
-        DefaultTableCellRenderer centerRenderer =
-                new DefaultTableCellRenderer();
-
-        centerRenderer.setHorizontalAlignment(
-                JLabel.CENTER
+        appointmentTable.setAutoCreateRowSorter(
+                true
         );
 
         appointmentTable
                 .getColumnModel()
                 .getColumn(0)
-                .setCellRenderer(
-                        centerRenderer
-                );
+                .setPreferredWidth(55);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(1)
+                .setPreferredWidth(180);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(2)
+                                .setPreferredWidth(140);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(3)
+                .setPreferredWidth(110);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(4)
+                .setPreferredWidth(90);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(5)
+                .setPreferredWidth(70);
 
         appointmentTable
                 .getColumnModel()
                 .getColumn(6)
-                .setCellRenderer(
-                        centerRenderer
-                );
+                .setPreferredWidth(110);
 
         appointmentTable
                 .getColumnModel()
                 .getColumn(7)
-                .setCellRenderer(
-                        centerRenderer
-                );
+                .setPreferredWidth(130);
+
+        DefaultTableCellRenderer centerRenderer =
+                new DefaultTableCellRenderer();
+
+        centerRenderer.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(0)
+                .setCellRenderer(centerRenderer);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(3)
+                .setCellRenderer(centerRenderer);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(4)
+                .setCellRenderer(centerRenderer);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(5)
+                .setCellRenderer(centerRenderer);
+
+        appointmentTable
+                .getColumnModel()
+                .getColumn(6)
+                .setCellRenderer(centerRenderer);
 
         JScrollPane scrollPane =
                 new JScrollPane(
                         appointmentTable
                 );
 
-        scrollPane.setBorder(
-                BorderFactory.createLineBorder(
-                        AppTheme.BORDER
-                )
-        );
+        scrollPane.setBorder(null);
 
-        tableCard.add(
+        card.add(
                 scrollPane,
                 BorderLayout.CENTER
         );
 
-        /*
-         * Bottom controls.
-         */
-
-        JPanel bottomPanel =
-                new JPanel(
-                        new BorderLayout()
-                );
-
-        bottomPanel.setOpaque(
-                false
-        );
-
-        JLabel noteLabel =
-                new JLabel(
-                        "Appointments are loaded directly "
-                                + "from the hospital database."
-                );
-
-        noteLabel.setFont(
-                AppTheme.SMALL_FONT
-        );
-
-        noteLabel.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        bottomPanel.add(
-                noteLabel,
-                BorderLayout.WEST
-        );
-
-        JPanel buttonPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.RIGHT,
-                                10,
-                                0
-                        )
-                );
-
-        buttonPanel.setOpaque(
-                false
-        );
-
-        JButton refreshButton =
-                new JButton(
-                        "Refresh"
-                );
-
-        AppTheme.styleButton(
-                refreshButton
-        );
-
-        JButton backButton =
-                new JButton(
-                        "Back to Dashboard"
-                );
-
-        backButton.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        backButton.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        backButton.setBackground(
-                Color.WHITE
-        );
-
-        backButton.setFocusPainted(
-                false
-        );
-
-        backButton.setBorder(
-                BorderFactory.createLineBorder(
-                        AppTheme.BORDER
-                )
-        );
-
-        buttonPanel.add(
-                refreshButton
-        );
-
-        buttonPanel.add(
-                backButton
-        );
-
-        bottomPanel.add(
-                buttonPanel,
-                BorderLayout.EAST
-        );
-
-        tableCard.add(
-                bottomPanel,
-                BorderLayout.SOUTH
-        );
-
-        contentPanel.add(
-                tableCard,
-                BorderLayout.CENTER
-        );
-
-        mainPanel.add(
-                sidebar,
-                BorderLayout.WEST
-        );
-
-        mainPanel.add(
-                contentPanel,
-                BorderLayout.CENTER
-        );
-
-        add(mainPanel);
-
-        /*
-         * =================================================
-         * ACTIONS
-         * =================================================
-         */
-
-        dashboardButton.addActionListener(
-                e -> openDashboard()
-        );
-
-        bookingButton.addActionListener(
-                e -> openBooking()
-        );
-
-        historyButton.addActionListener(
-                e -> {
-                    // Already on appointment history.
-                }
-        );
-
-        logoutButton.addActionListener(
-                e -> logout()
-        );
-
-        backButton.addActionListener(
-                e -> openDashboard()
-        );
-
-        refreshButton.addActionListener(
-                e -> refreshAppointments()
-        );
+        return card;
     }
 
-    /**
-     * Creates a sidebar navigation button.
-     */
-    private JButton createSidebarButton(
-            String text) {
+    // =========================================================
+    // LOAD APPOINTMENTS
+    // =========================================================
 
-        JButton button =
-                new JButton(text);
-
-        button.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        button.setForeground(
-                Color.WHITE
-        );
-
-        button.setBackground(
-                AppTheme.PRIMARY_DARK
-        );
-
-        button.setHorizontalAlignment(
-                JButton.LEFT
-        );
-
-        button.setFocusPainted(
-                false
-        );
-
-        button.setBorder(
-                BorderFactory.createEmptyBorder(
-                        12,
-                        15,
-                        12,
-                        15
-                )
-        );
-
-        button.setCursor(
-                new java.awt.Cursor(
-                        java.awt.Cursor.HAND_CURSOR
-                )
-        );
-
-        return button;
-    }
-
-    /**
-     * Loads the logged-in patient's appointments
-     * from the MySQL database.
-     */
     private void loadAppointments() {
+
+        if (tableModel == null) {
+            return;
+        }
+
+        tableModel.setRowCount(0);
+
+        int total = 0;
+        int upcoming = 0;
+        int completed = 0;
 
         String sql =
                 "SELECT a.appointment_id, "
-                        + "u.full_name AS doctor_name, "
-                        + "d.department, "
-                        + "a.appointment_date, "
-                        + "a.appointment_time, "
-                        + "a.symptoms, "
-                        + "a.emergency_flag, "
-                        + "a.status "
-                        + "FROM appointments a "
-                        + "JOIN doctors d "
-                        + "ON a.doctor_id = d.doctor_id "
-                        + "JOIN users u "
-                        + "ON d.user_id = u.user_id "
-                        + "WHERE a.patient_id = ? "
-                        + "ORDER BY a.appointment_date DESC, "
-                        + "a.appointment_time DESC";
+                + "u.full_name AS doctor_name, "
+                + "dep.department_name AS department, "
+                + "a.appointment_date, "
+                + "a.appointment_time, "
+                + "q.queue_number, "
+                + "q.emergency_status, "
+                + "a.status "
+                + "FROM appointments a "
+                + "JOIN doctors d "
+                + "ON a.doctor_id = d.doctor_id "
+                + "JOIN users u "
+                + "ON d.doctor_id = u.user_id "
+                + "JOIN departments dep "
+                + "ON d.department_id = dep.department_id "
+                + "JOIN queue q "
+                + "ON a.appointment_id = q.appointment_id "
+                + "WHERE a.patient_id = ? "
+                + "ORDER BY a.appointment_date DESC, "
+                + "a.appointment_time DESC";
 
         try (
                 Connection connection =
-                        java.sql.DriverManager
-                                .getConnection(
-                                        DB_URL,
-                                        DB_USER,
-                                        DB_PASSWORD
-                                );
+                        DriverManager.getConnection(
+                                DB_URL,
+                                DB_USER,
+                                DB_PASSWORD
+                        );
 
                 PreparedStatement statement =
-                        connection.prepareStatement(
-                                sql
-                        )
+                        connection.prepareStatement(sql)
         ) {
 
             statement.setInt(
                     1,
-                    patient.getUserId()
+                    user.getUserId()
             );
 
             try (
@@ -798,110 +992,150 @@ public class AppointmentHistoryFrame extends JFrame {
 
                 while (resultSet.next()) {
 
-                    Object[] row = {
-                            resultSet.getInt(
-                                    "appointment_id"
-                            ),
+                    total++;
 
-                            resultSet.getString(
-                                    "doctor_name"
-                            ),
-
-                            resultSet.getString(
-                                    "department"
-                            ),
-
-                            resultSet.getDate(
-                                    "appointment_date"
-                            ),
-
-                            resultSet.getTime(
-                                    "appointment_time"
-                            ),
-
-                            resultSet.getString(
-                                    "symptoms"
-                            ),
-
-                            resultSet.getBoolean(
-                                    "emergency_flag"
-                            )
-                                    ? "YES"
-                                    : "NO",
-
+                    String status =
                             resultSet.getString(
                                     "status"
+                            );
+
+                    if ("COMPLETED".equals(
+                            status
+                    )) {
+
+                        completed++;
+
+                    } else if (
+                            !"CANCELLED".equals(
+                                    status
                             )
-                    };
+                    ) {
+
+                        upcoming++;
+                    }
 
                     tableModel.addRow(
-                            row
+                            new Object[] {
+                                    resultSet.getInt(
+                                            "appointment_id"
+                                    ),
+                                    resultSet.getString(
+                                            "doctor_name"
+                                    ),
+                                    resultSet.getString(
+                                            "department"
+                                    ),
+                                    resultSet.getDate(
+                                            "appointment_date"
+                                    ),
+                                    resultSet.getTime(
+                                            "appointment_time"
+                                    ),
+                                    resultSet.getInt(
+                                            "queue_number"
+                                    ),
+                                    resultSet.getString(
+                                            "emergency_status"
+                                    ),
+                                    status
+                            }
                     );
                 }
             }
 
-        } catch (SQLException ex) {
+            totalLabel.setText(
+                    String.valueOf(total)
+            );
+
+            upcomingLabel.setText(
+                    String.valueOf(upcoming)
+            );
+
+            completedLabel.setText(
+                    String.valueOf(completed)
+            );
+
+        } catch (Exception exception) {
+
+            exception.printStackTrace();
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Unable to load appointment history.\n\n"
-                            + ex.getMessage(),
+                    "Unable to load appointments.\n\n"
+                    + exception.getMessage(),
                     "Database Error",
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    /**
-     * Clears and reloads the appointment table.
-     */
-    private void refreshAppointments() {
+    // =========================================================
+    // NAVIGATION
+    // =========================================================
 
-        tableModel.setRowCount(0);
-
-        loadAppointments();
-    }
-
-    /**
-     * Opens patient dashboard.
-     */
     private void openDashboard() {
 
-        PatientDashboard dashboard =
-                new PatientDashboard(
-                        patient
-                );
-
-        dashboard.setVisible(true);
-
         dispose();
+
+        new PatientDashboard(user)
+                .setVisible(true);
     }
 
-    /**
-     * Opens booking screen.
-     */
     private void openBooking() {
 
-        BookingFrame bookingFrame =
-                new BookingFrame(
-                        patient
-                );
-
-        bookingFrame.setVisible(true);
-
         dispose();
+
+        new BookingFrame(user)
+                .setVisible(true);
     }
 
-    /**
-     * Logs the patient out.
-     */
+    // =========================================================
+    // PROFILE
+    // =========================================================
+
+    private void showProfile() {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "<html>"
+                + "<b>Name:</b> "
+                + user.getFullName()
+                + "<br><br>"
+                + "<b>Username:</b> "
+                + user.getUsername()
+                + "<br><br>"
+                + "<b>Email:</b> "
+                + user.getEmail()
+                + "<br><br>"
+                + "<b>Phone:</b> "
+                + user.getPhone()
+                + "</html>",
+                "My Profile",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    // =========================================================
+    // LOGOUT
+    // =========================================================
+
     private void logout() {
 
-        LoginFrame loginFrame =
-                new LoginFrame();
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to sign out?",
+                        "Sign Out",
+                        JOptionPane.YES_NO_OPTION
+                );
 
-        loginFrame.setVisible(true);
+        if (choice ==
+                JOptionPane.YES_OPTION) {
 
-        dispose();
+            dispose();
+
+            new LoginFrame()
+                    .setVisible(true);
+        }
     }
 }

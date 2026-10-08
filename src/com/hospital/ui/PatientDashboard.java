@@ -1,932 +1,272 @@
 package com.hospital.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import com.hospital.model.User;
 
-/**
- * Professional patient dashboard.
- *
- * Module 2:
- * Appointment Booking & Scheduling
- */
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+
 public class PatientDashboard extends JFrame {
 
-    private User user;
+    private final User user;
 
     public PatientDashboard(User user) {
-
         this.user = user;
 
-        setTitle(
-                "Hospital Appointment System - Patient Dashboard"
-        );
+        setTitle("Patient Dashboard | Hospital Management System");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setMinimumSize(new Dimension(1100, 700));
 
-        setExtendedState(
-                JFrame.MAXIMIZED_BOTH
-        );
-
-        setMinimumSize(
-                new Dimension(1100, 700)
-        );
-
-        setDefaultCloseOperation(
-                JFrame.EXIT_ON_CLOSE
-        );
+        buildUI();
 
         setLocationRelativeTo(null);
-
-        createUI();
     }
 
-    /**
-     * Creates the complete patient dashboard.
-     */
-    private void createUI() {
+    private void buildUI() {
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(AppTheme.BACKGROUND);
 
-        JPanel mainPanel =
-                new JPanel(new BorderLayout());
+        root.add(createSidebar(), BorderLayout.WEST);
+        root.add(createMainContent(), BorderLayout.CENTER);
 
-        mainPanel.setBackground(
-                AppTheme.BACKGROUND
+        setContentPane(root);
+    }
+
+    private JPanel createSidebar() {
+        JPanel sidebar = new JPanel(new BorderLayout());
+        sidebar.setPreferredSize(new Dimension(AppTheme.SIDEBAR_WIDTH, 0));
+        sidebar.setBackground(AppTheme.NAVY);
+
+        JPanel top = new JPanel();
+        top.setOpaque(false);
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+        top.setBorder(new EmptyBorder(28, 24, 20, 24));
+
+        JLabel logo = new JLabel("MEDICARE");
+        logo.setFont(new Font("SansSerif", Font.BOLD, 22));
+        logo.setForeground(AppTheme.WHITE);
+        logo.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel subtitle = new JLabel("Hospital Management");
+        subtitle.setFont(AppTheme.FONT_SMALL);
+        subtitle.setForeground(new Color(190, 205, 225));
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        top.add(logo);
+        top.add(Box.createVerticalStrut(4));
+        top.add(subtitle);
+        top.add(Box.createVerticalStrut(36));
+
+        JLabel navLabel = new JLabel("PATIENT PORTAL");
+        navLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
+        navLabel.setForeground(new Color(150, 170, 195));
+        navLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        top.add(navLabel);
+        top.add(Box.createVerticalStrut(12));
+
+        JButton dashboardButton = createNavButton("Dashboard");
+        dashboardButton.setBackground(AppTheme.NAVY_LIGHT);
+        dashboardButton.setOpaque(true);
+
+        JButton bookingButton = createNavButton("Book Appointment");
+        bookingButton.addActionListener(e -> {
+            dispose();
+            new BookingFrame(user).setVisible(true);
+        });
+
+        JButton appointmentsButton = createNavButton("My Appointments");
+        appointmentsButton.addActionListener(e -> {
+            dispose();
+            new AppointmentHistoryFrame(user).setVisible(true);
+        });
+
+        top.add(dashboardButton);
+        top.add(bookingButton);
+        top.add(appointmentsButton);
+
+        sidebar.add(top, BorderLayout.NORTH);
+
+        JPanel bottom = new JPanel();
+        bottom.setOpaque(false);
+        bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
+        bottom.setBorder(new EmptyBorder(15, 24, 24, 24));
+
+        JLabel nameLabel = new JLabel(user.getFullName());
+        nameLabel.setFont(AppTheme.FONT_BODY_BOLD);
+        nameLabel.setForeground(AppTheme.WHITE);
+
+        JLabel roleLabel = new JLabel(user.getRole());
+        roleLabel.setFont(AppTheme.FONT_SMALL);
+        roleLabel.setForeground(new Color(170, 190, 215));
+
+        JButton logoutButton = createNavButton("Logout");
+        logoutButton.addActionListener(e -> {
+            dispose();
+            new LoginFrame().setVisible(true);
+        });
+
+        bottom.add(nameLabel);
+        bottom.add(Box.createVerticalStrut(3));
+        bottom.add(roleLabel);
+        bottom.add(Box.createVerticalStrut(14));
+        bottom.add(logoutButton);
+
+        sidebar.add(bottom, BorderLayout.SOUTH);
+
+        return sidebar;
+    }
+
+    private JPanel createMainContent() {
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(AppTheme.BACKGROUND);
+        content.setBorder(new EmptyBorder(32, 36, 32, 36));
+
+        JPanel header = new JPanel();
+        header.setOpaque(false);
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+
+        JLabel title = new JLabel("Patient Dashboard");
+        title.setFont(AppTheme.FONT_H1);
+        title.setForeground(AppTheme.TEXT);
+
+        JLabel subtitle = new JLabel(
+                "Manage your appointments and hospital visits."
         );
+        subtitle.setFont(AppTheme.FONT_BODY);
+        subtitle.setForeground(AppTheme.TEXT_SECONDARY);
 
-        /*
-         * =================================================
-         * SIDEBAR
-         * =================================================
-         */
+        header.add(title);
+        header.add(Box.createVerticalStrut(7));
+        header.add(subtitle);
 
-        JPanel sidebar =
-                new JPanel(new BorderLayout());
+        content.add(header, BorderLayout.NORTH);
 
-        sidebar.setBackground(
-                AppTheme.PRIMARY_DARK
+        JPanel body = new JPanel(new GridBagLayout());
+        body.setOpaque(false);
+        body.setBorder(new EmptyBorder(32, 0, 0, 0));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(0, 0, 20, 0);
+
+        body.add(createWelcomeCard(), gbc);
+
+        gbc.gridy = 1;
+
+        body.add(createQuickActionsCard(), gbc);
+
+        content.add(body, BorderLayout.CENTER);
+
+        return content;
+    }
+
+    private JPanel createWelcomeCard() {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(AppTheme.WHITE);
+        card.setBorder(AppTheme.cardBorder());
+
+        JPanel text = new JPanel();
+        text.setOpaque(false);
+        text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
+
+        JLabel heading = new JLabel(
+                "Welcome, " + user.getFullName()
         );
+        heading.setFont(AppTheme.FONT_H2);
+        heading.setForeground(AppTheme.TEXT);
 
-        sidebar.setPreferredSize(
-                new Dimension(250, 0)
+        JLabel description = new JLabel(
+                "<html>Book a new appointment, check your queue position, "
+                        + "or review your previous appointments.</html>"
         );
+        description.setFont(AppTheme.FONT_BODY);
+        description.setForeground(AppTheme.TEXT_SECONDARY);
 
-        /*
-         * Hospital branding.
-         */
+        text.add(heading);
+        text.add(Box.createVerticalStrut(10));
+        text.add(description);
 
-        JPanel brandPanel =
-                new JPanel(
-                        new GridBagLayout()
-                );
+        card.add(text, BorderLayout.CENTER);
 
-        brandPanel.setBackground(
-                AppTheme.PRIMARY_DARK
+        JLabel badge = new JLabel("PATIENT");
+        badge.setFont(AppTheme.FONT_SMALL_BOLD);
+        badge.setForeground(AppTheme.BLUE);
+        badge.setBackground(AppTheme.BLUE_LIGHT);
+        badge.setOpaque(true);
+        badge.setBorder(new EmptyBorder(9, 14, 9, 14));
+
+        card.add(badge, BorderLayout.EAST);
+
+        return card;
+    }
+
+    private JPanel createQuickActionsCard() {
+        JPanel card = new JPanel();
+        card.setBackground(AppTheme.WHITE);
+        card.setBorder(AppTheme.cardBorder());
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+
+        JLabel heading = new JLabel("Quick Actions");
+        heading.setFont(AppTheme.FONT_H2);
+        heading.setForeground(AppTheme.TEXT);
+
+        card.add(heading);
+        card.add(Box.createVerticalStrut(20));
+
+        JPanel buttons = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 12, 0)
         );
-
-        GridBagConstraints brandGbc =
-                new GridBagConstraints();
-
-        brandGbc.gridx = 0;
-        brandGbc.gridy = 0;
-
-        brandGbc.insets =
-                new Insets(
-                        30, 10, 5, 10
-                );
-
-        JLabel logo =
-                new JLabel("+");
-
-        logo.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        42
-                )
-        );
-
-        logo.setForeground(
-                Color.WHITE
-        );
-
-        brandPanel.add(
-                logo,
-                brandGbc
-        );
-
-        brandGbc.gridy++;
-
-        JLabel brandName =
-                new JLabel("HOSPITAL+");
-
-        brandName.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        22
-                )
-        );
-
-        brandName.setForeground(
-                Color.WHITE
-        );
-
-        brandPanel.add(
-                brandName,
-                brandGbc
-        );
-
-        brandGbc.gridy++;
-
-        JLabel brandSubtitle =
-                new JLabel(
-                        "Patient Portal"
-                );
-
-        brandSubtitle.setFont(
-                AppTheme.SMALL_FONT
-        );
-
-        brandSubtitle.setForeground(
-                new Color(
-                        190, 210, 235
-                )
-        );
-
-        brandPanel.add(
-                brandSubtitle,
-                brandGbc
-        );
-
-        sidebar.add(
-                brandPanel,
-                BorderLayout.NORTH
-        );
-
-        /*
-         * Navigation buttons.
-         */
-
-        JPanel navigationPanel =
-                new JPanel(
-                        new GridLayout(
-                                6,
-                                1,
-                                0,
-                                8
-                        )
-                );
-
-        navigationPanel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        30, 15, 20, 15
-                )
-        );
-
-        navigationPanel.setBackground(
-                AppTheme.PRIMARY_DARK
-        );
-
-        JButton dashboardButton =
-                createSidebarButton(
-                        "Dashboard"
-                );
+        buttons.setOpaque(false);
 
         JButton bookButton =
-                createSidebarButton(
-                        "Book Appointment"
-                );
+                AppTheme.primaryButton("Book Appointment");
 
-        JButton historyButton =
-                createSidebarButton(
-                        "My Appointments"
-                );
+        bookButton.addActionListener(e -> {
+            dispose();
+            new BookingFrame(user).setVisible(true);
+        });
 
-        JButton profileButton =
-                createSidebarButton(
-                        "My Profile"
-                );
+        JButton appointmentsButton =
+                AppTheme.secondaryButton("My Appointments");
 
-        JButton helpButton =
-                createSidebarButton(
-                        "Help & Support"
-                );
+        appointmentsButton.addActionListener(e -> {
+            dispose();
+            new AppointmentHistoryFrame(user).setVisible(true);
+        });
 
-        JButton logoutButton =
-                createSidebarButton(
-                        "Logout"
-                );
+        buttons.add(bookButton);
+        buttons.add(appointmentsButton);
 
-        navigationPanel.add(
-                dashboardButton
-        );
+        card.add(buttons);
 
-        navigationPanel.add(
-                bookButton
-        );
-
-        navigationPanel.add(
-                historyButton
-        );
-
-        navigationPanel.add(
-                profileButton
-        );
-
-        navigationPanel.add(
-                helpButton
-        );
-
-        navigationPanel.add(
-                logoutButton
-        );
-
-        sidebar.add(
-                navigationPanel,
-                BorderLayout.CENTER
-        );
-
-        /*
-         * =================================================
-         * MAIN CONTENT
-         * =================================================
-         */
-
-        JPanel contentPanel =
-                new JPanel(
-                        new BorderLayout(
-                                20,
-                                20
-                        )
-                );
-
-        contentPanel.setBackground(
-                AppTheme.BACKGROUND
-        );
-
-        contentPanel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        25,
-                        30,
-                        25,
-                        30
-                )
-        );
-
-        /*
-         * Top header.
-         */
-
-        JPanel headerPanel =
-                new JPanel(
-                        new BorderLayout()
-                );
-
-        headerPanel.setOpaque(
-                false
-        );
-
-        JPanel welcomePanel =
-                new JPanel(
-                        new GridLayout(
-                                2,
-                                1
-                        )
-                );
-
-        welcomePanel.setOpaque(
-                false
-        );
-
-        JLabel welcomeLabel =
-                new JLabel(
-                        "Welcome back, "
-                                + user.getFullName()
-                );
-
-        welcomeLabel.setFont(
-                AppTheme.TITLE_FONT
-        );
-
-        welcomeLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
-        );
-
-        JLabel subtitleLabel =
-                new JLabel(
-                        "Manage your appointments and "
-                                + "healthcare visits."
-                );
-
-        subtitleLabel.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        subtitleLabel.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        welcomePanel.add(
-                welcomeLabel
-        );
-
-        welcomePanel.add(
-                subtitleLabel
-        );
-
-        headerPanel.add(
-                welcomePanel,
-                BorderLayout.WEST
-        );
-
-        /*
-         * User information on right.
-         */
-
-        JPanel userPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.RIGHT
-                        )
-                );
-
-        userPanel.setOpaque(
-                false
-        );
-
-        JLabel userRole =
-                new JLabel(
-                        "PATIENT"
-                );
-
-        userRole.setFont(
-                AppTheme.SUBHEADING_FONT
-        );
-
-        userRole.setForeground(
-                AppTheme.PRIMARY
-        );
-
-        userPanel.add(
-                userRole
-        );
-
-        headerPanel.add(
-                userPanel,
-                BorderLayout.EAST
-        );
-
-        contentPanel.add(
-                headerPanel,
-                BorderLayout.NORTH
-        );
-
-        /*
-         * =================================================
-         * DASHBOARD BODY
-         * =================================================
-         */
-
-        JPanel dashboardBody =
-                new JPanel(
-                        new BorderLayout(
-                                20,
-                                20
-                        )
-                );
-
-        dashboardBody.setOpaque(
-                false
-        );
-
-        /*
-         * Statistics cards.
-         */
-
-        JPanel statsPanel =
-                new JPanel(
-                        new GridLayout(
-                                1,
-                                3,
-                                20,
-                                20
-                        )
-                );
-
-        statsPanel.setOpaque(
-                false
-        );
-
-        statsPanel.add(
-                createStatCard(
-                        "Upcoming Appointments",
-                        "1",
-                        AppTheme.PRIMARY
-                )
-        );
-
-        statsPanel.add(
-                createStatCard(
-                        "Completed Visits",
-                        "0",
-                        AppTheme.SUCCESS
-                )
-        );
-
-        statsPanel.add(
-                createStatCard(
-                        "Emergency Requests",
-                        "0",
-                        AppTheme.DANGER
-                )
-        );
-
-        dashboardBody.add(
-                statsPanel,
-                BorderLayout.NORTH
-        );
-
-        /*
-         * Main action cards.
-         */
-
-        JPanel actionArea =
-                new JPanel(
-                        new GridLayout(
-                                1,
-                                2,
-                                20,
-                                20
-                        )
-                );
-
-        actionArea.setOpaque(
-                false
-        );
-
-        /*
-         * Book appointment card.
-         */
-
-        JPanel bookingCard =
-                createContentCard();
-
-        bookingCard.setLayout(
-                new GridBagLayout()
-        );
-
-        GridBagConstraints bookingGbc =
-                new GridBagConstraints();
-
-        bookingGbc.gridx = 0;
-        bookingGbc.gridy = 0;
-
-        bookingGbc.anchor =
-                GridBagConstraints.WEST;
-
-        bookingGbc.insets =
-                new Insets(
-                        10,
-                        20,
-                        10,
-                        20
-                );
-
-        JLabel bookingTitle =
-                new JLabel(
-                        "Book a New Appointment"
-                );
-
-        bookingTitle.setFont(
-                AppTheme.HEADING_FONT
-        );
-
-        bookingTitle.setForeground(
-                AppTheme.TEXT_PRIMARY
-        );
-
-        bookingCard.add(
-                bookingTitle,
-                bookingGbc
-        );
-
-        bookingGbc.gridy++;
-
-        JLabel bookingDescription =
-                new JLabel(
-                        "<html>Find an available doctor and "
-                                + "schedule your next visit.</html>"
-                );
-
-        bookingDescription.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        bookingDescription.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        bookingCard.add(
-                bookingDescription,
-                bookingGbc
-        );
-
-        bookingGbc.gridy++;
-
-        JButton bookNowButton =
-                new JButton(
-                        "Book Appointment"
-                );
-
-        AppTheme.styleButton(
-                bookNowButton
-        );
-
-        bookingCard.add(
-                bookNowButton,
-                bookingGbc
-        );
-
-        /*
-         * Appointment history card.
-         */
-
-        JPanel historyCard =
-                createContentCard();
-
-        historyCard.setLayout(
-                new GridBagLayout()
-        );
-
-        GridBagConstraints historyGbc =
-                new GridBagConstraints();
-
-        historyGbc.gridx = 0;
-        historyGbc.gridy = 0;
-
-        historyGbc.anchor =
-                GridBagConstraints.WEST;
-
-        historyGbc.insets =
-                new Insets(
-                        10,
-                        20,
-                        10,
-                        20
-                );
-
-        JLabel historyTitle =
-                new JLabel(
-                        "My Appointments"
-                );
-
-        historyTitle.setFont(
-                AppTheme.HEADING_FONT
-        );
-
-        historyTitle.setForeground(
-                AppTheme.TEXT_PRIMARY
-        );
-
-        historyCard.add(
-                historyTitle,
-                historyGbc
-        );
-
-        historyGbc.gridy++;
-
-        JLabel historyDescription =
-                new JLabel(
-                        "<html>View your booked appointments, "
-                                + "dates, doctors and status.</html>"
-                );
-
-        historyDescription.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        historyDescription.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        historyCard.add(
-                historyDescription,
-                historyGbc
-        );
-
-        historyGbc.gridy++;
-
-        JButton historyViewButton =
-                new JButton(
-                        "View Appointments"
-                );
-
-        AppTheme.styleButton(
-                historyViewButton
-        );
-
-        historyCard.add(
-                historyViewButton,
-                historyGbc
-        );
-
-        actionArea.add(
-                bookingCard
-        );
-
-        actionArea.add(
-                historyCard
-        );
-
-        dashboardBody.add(
-                actionArea,
-                BorderLayout.CENTER
-        );
-
-        contentPanel.add(
-                dashboardBody,
-                BorderLayout.CENTER
-        );
-
-        mainPanel.add(
-                sidebar,
-                BorderLayout.WEST
-        );
-
-        mainPanel.add(
-                contentPanel,
-                BorderLayout.CENTER
-        );
-
-        add(mainPanel);
-
-        /*
-         * =================================================
-         * ACTIONS
-         * =================================================
-         */
-
-        bookButton.addActionListener(
-                e -> openBooking()
-        );
-
-        historyButton.addActionListener(
-                e -> openHistory()
-        );
-
-        bookNowButton.addActionListener(
-                e -> openBooking()
-        );
-
-        historyViewButton.addActionListener(
-                e -> openHistory()
-        );
-
-        logoutButton.addActionListener(
-                e -> logout()
-        );
-
-        /*
-         * These are currently visual navigation items.
-         * They will become functional as additional
-         * modules are implemented.
-         */
-
-        dashboardButton.addActionListener(
-                e -> {
-                    // Already on dashboard.
-                }
-        );
-
-        profileButton.addActionListener(
-                e -> showComingSoon(
-                        "Profile management"
-                )
-        );
-
-        helpButton.addActionListener(
-                e -> showComingSoon(
-                        "Help & Support"
-                )
-        );
+        return card;
     }
 
-    /**
-     * Creates a sidebar navigation button.
-     */
-    private JButton createSidebarButton(
-            String text) {
+    private JButton createNavButton(String text) {
+        JButton button = new JButton(text);
 
-        JButton button =
-                new JButton(text);
-
-        button.setFont(
-                AppTheme.BODY_FONT
+        button.setMaximumSize(
+                new Dimension(Integer.MAX_VALUE, 46)
         );
+        button.setPreferredSize(new Dimension(200, 46));
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        button.setForeground(
-                Color.WHITE
-        );
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setBorder(new EmptyBorder(0, 14, 0, 10));
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
 
-        button.setBackground(
-                AppTheme.PRIMARY_DARK
-        );
-
-        button.setHorizontalAlignment(
-                JButton.LEFT
-        );
-
-        button.setFocusPainted(
-                false
-        );
-
-        button.setBorder(
-                BorderFactory.createEmptyBorder(
-                        12,
-                        15,
-                        12,
-                        15
-                )
-        );
-
+        button.setForeground(new Color(220, 230, 242));
+        button.setFont(AppTheme.FONT_BODY_BOLD);
         button.setCursor(
-                new java.awt.Cursor(
-                        java.awt.Cursor.HAND_CURSOR
-                )
+                Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
         );
 
         return button;
-    }
-
-    /**
-     * Creates a statistics card.
-     */
-    private JPanel createStatCard(
-            String title,
-            String value,
-            Color accent) {
-
-        JPanel card =
-                new JPanel(
-                        new BorderLayout(
-                                10,
-                                5
-                        )
-                );
-
-        card.setBackground(
-                AppTheme.SURFACE
-        );
-
-        card.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(
-                                0,
-                                5,
-                                0,
-                                0,
-                                accent
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                18,
-                                20,
-                                18,
-                                20
-                        )
-                )
-        );
-
-        JLabel titleLabel =
-                new JLabel(title);
-
-        titleLabel.setFont(
-                AppTheme.SMALL_FONT
-        );
-
-        titleLabel.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        JLabel valueLabel =
-                new JLabel(value);
-
-        valueLabel.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        30
-                )
-        );
-
-        valueLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
-        );
-
-        card.add(
-                titleLabel,
-                BorderLayout.NORTH
-        );
-
-        card.add(
-                valueLabel,
-                BorderLayout.CENTER
-        );
-
-        return card;
-    }
-
-    /**
-     * Creates a standard content card.
-     */
-    private JPanel createContentCard() {
-
-        JPanel card =
-                new JPanel();
-
-        card.setBackground(
-                AppTheme.SURFACE
-        );
-
-        card.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                AppTheme.BORDER
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                15,
-                                15,
-                                15,
-                                15
-                        )
-                )
-        );
-
-        return card;
-    }
-
-    /**
-     * Opens appointment booking.
-     */
-    private void openBooking() {
-
-        BookingFrame bookingFrame =
-                new BookingFrame(user);
-
-        bookingFrame.setVisible(true);
-
-        dispose();
-    }
-
-    /**
-     * Opens appointment history.
-     */
-    private void openHistory() {
-
-        AppointmentHistoryFrame historyFrame =
-                new AppointmentHistoryFrame(user);
-
-        historyFrame.setVisible(true);
-
-        dispose();
-    }
-
-    /**
-     * Logs the patient out.
-     */
-    private void logout() {
-
-        LoginFrame loginFrame =
-                new LoginFrame();
-
-        loginFrame.setVisible(true);
-        dispose();
-    }
-
-    /**
-     * Displays a temporary message for features
-     * that are not implemented yet.
-     */
-    private void showComingSoon(
-            String feature) {
-
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                feature
-                        + " will be added in a future module.",
-                "Coming Soon",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-        );
     }
 }

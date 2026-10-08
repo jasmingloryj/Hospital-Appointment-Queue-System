@@ -1,207 +1,252 @@
 package com.hospital.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.sql.SQLException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-
 import com.hospital.service.AuthService;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 /**
  * Professional patient registration screen.
  *
- * Module 1:
- * User Authentication & Role Management
- *
- * Public registration creates a PATIENT account.
+ * Public registration creates PATIENT accounts only.
  */
 public class RegisterFrame extends JFrame {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private JPasswordField confirmPasswordField;
     private JTextField fullNameField;
     private JTextField emailField;
     private JTextField phoneField;
 
-    private AuthService authService;
+    private final AuthService authService;
 
     public RegisterFrame() {
 
         authService = new AuthService();
 
         setTitle(
-                "Hospital Appointment System - Create Account"
-        );
-
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        setMinimumSize(
-                new Dimension(1000, 650)
+                "Create Patient Account - Hospital System"
         );
 
         setDefaultCloseOperation(
-                JFrame.EXIT_ON_CLOSE
+                JFrame.DISPOSE_ON_CLOSE
         );
 
-        setLocationRelativeTo(null);
+        setMinimumSize(
+                new Dimension(1050, 700)
+        );
 
-        createUI();
+        setExtendedState(
+                JFrame.MAXIMIZED_BOTH
+        );
+
+        buildUI();
+
+        setLocationRelativeTo(null);
     }
 
-    /**
-     * Creates the professional registration interface.
-     */
-    private void createUI() {
+    // =========================================================
+    // BUILD
+    // =========================================================
 
-        JPanel mainPanel =
-                new JPanel(new BorderLayout());
+    private void buildUI() {
 
-        mainPanel.setBackground(
+        JPanel root =
+                new JPanel(new GridLayout(1, 2));
+
+        root.setBackground(
                 AppTheme.BACKGROUND
         );
 
-        /*
-         * -------------------------------------------------
-         * LEFT BRANDING PANEL
-         * -------------------------------------------------
-         */
+        root.add(createBrandSection());
+        root.add(createRegistrationSection());
 
-        JPanel brandingPanel =
-                new JPanel(new GridBagLayout());
+        setContentPane(root);
+    }
 
-        brandingPanel.setBackground(
-                AppTheme.PRIMARY_DARK
+    // =========================================================
+    // BRAND SECTION
+    // =========================================================
+
+    private JPanel createBrandSection() {
+
+        JPanel brand =
+                AppTheme.createBrandPanel();
+
+        brand.setLayout(
+                new GridBagLayout()
         );
 
-        brandingPanel.setPreferredSize(
-                new Dimension(430, 0)
-        );
+        JPanel content =
+                new JPanel();
 
-        GridBagConstraints brandGbc =
-                new GridBagConstraints();
+        content.setOpaque(false);
 
-        brandGbc.gridx = 0;
-        brandGbc.gridy = 0;
-
-        brandGbc.insets =
-                new Insets(
-                        10, 40, 10, 40
-                );
-
-        brandGbc.anchor =
-                GridBagConstraints.CENTER;
-
-        JLabel hospitalIcon =
-                new JLabel("+");
-
-        hospitalIcon.setFont(
-                new java.awt.Font(
-                        "Segoe UI",
-                        java.awt.Font.BOLD,
-                        70
+        content.setLayout(
+                new BoxLayout(
+                        content,
+                        BoxLayout.Y_AXIS
                 )
         );
 
-        hospitalIcon.setForeground(
-                Color.WHITE
+        JLabel logo =
+                new JLabel("H");
+
+        logo.setHorizontalAlignment(
+                SwingConstants.CENTER
         );
 
-        brandingPanel.add(
-                hospitalIcon,
-                brandGbc
+        logo.setVerticalAlignment(
+                SwingConstants.CENTER
         );
 
-        brandGbc.gridy++;
+        logo.setForeground(
+                AppTheme.WHITE
+        );
 
-        JLabel hospitalName =
-                new JLabel("HOSPITAL+");
+        logo.setBackground(
+                AppTheme.BLUE
+        );
 
-        hospitalName.setFont(
-                new java.awt.Font(
+        logo.setOpaque(true);
+
+        logo.setFont(
+                new Font(
                         "Segoe UI",
-                        java.awt.Font.BOLD,
+                        Font.BOLD,
                         34
                 )
         );
 
-        hospitalName.setForeground(
-                Color.WHITE
+        logo.setPreferredSize(
+                new Dimension(72, 72)
         );
 
-        brandingPanel.add(
-                hospitalName,
-                brandGbc
+        logo.setMaximumSize(
+                new Dimension(72, 72)
         );
 
-        brandGbc.gridy++;
-
-        JLabel subtitle =
+        JLabel title =
                 new JLabel(
-                        "<html><div style='text-align:center;'>"
-                                + "Create your patient account<br>"
-                                + "and manage your appointments"
-                                + "</div></html>"
+                        "<html>Join the<br>"
+                        + "Hospital Care Portal</html>"
                 );
 
-        subtitle.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        subtitle.setForeground(
-                new Color(
-                        225, 235, 250
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        34
                 )
         );
 
-        brandingPanel.add(
-                subtitle,
-                brandGbc
+        title.setForeground(
+                AppTheme.WHITE
         );
 
-        /*
-         * -------------------------------------------------
-         * RIGHT REGISTRATION AREA
-         * -------------------------------------------------
-         */
+        title.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
 
-        JPanel rightPanel =
-                new JPanel(
-                        new GridBagLayout()
+        title.setBorder(
+                new EmptyBorder(
+                        28,
+                        0,
+                        0,
+                        0
+                )
+        );
+
+        JLabel subtitle =
+                new JLabel(
+                        "<html>Create your patient account<br>"
+                        + "and manage your healthcare appointments "
+                        + "in one place.</html>"
                 );
 
-        rightPanel.setBackground(
-                AppTheme.BACKGROUND
+        subtitle.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        17
+                )
         );
 
-        JPanel registrationCard =
-                new JPanel(
-                        new GridBagLayout()
+        subtitle.setForeground(
+                new Color(203, 213, 225)
+        );
+
+        subtitle.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        subtitle.setBorder(
+                new EmptyBorder(
+                        16,
+                        0,
+                        0,
+                        0
+                )
+        );
+
+        JLabel informationTitle =
+                new JLabel(
+                        "Your account gives you access to"
                 );
 
-        registrationCard.setBackground(
-                AppTheme.SURFACE
+        informationTitle.setFont(
+                AppTheme.FONT_BODY_BOLD
         );
 
-        registrationCard.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                AppTheme.BORDER
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                30, 45, 30, 45
-                        )
+        informationTitle.setForeground(
+                new Color(191, 219, 254)
+        );
+
+        informationTitle.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        informationTitle.setBorder(
+                new EmptyBorder(
+                        45,
+                        0,
+                        14,
+                        0
+                )
+        );
+
+        content.add(logo);
+        content.add(title);
+        content.add(subtitle);
+        content.add(informationTitle);
+
+        content.add(
+                createFeature(
+                        "✓",
+                        "Book appointments with available doctors"
+                )
+        );
+
+        content.add(
+                createFeature(
+                        "✓",
+                        "Track your appointment queue"
+                )
+        );
+
+        content.add(
+                createFeature(
+                        "✓",
+                        "Request emergency priority when needed"
+                )
+        );
+
+        content.add(
+                createFeature(
+                        "✓",
+                        "Access completed consultation records"
                 )
         );
 
@@ -210,345 +255,367 @@ public class RegisterFrame extends JFrame {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-
-        gbc.gridwidth = 2;
-
-        gbc.fill =
-                GridBagConstraints.HORIZONTAL;
-
         gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
 
-        gbc.insets =
-                new Insets(
-                        5, 5, 5, 5
-                );
+        brand.add(content, gbc);
 
-        /*
-         * Title
-         */
-
-        JLabel titleLabel =
-                new JLabel(
-                        "Create Patient Account"
-                );
-
-        titleLabel.setFont(
-                AppTheme.TITLE_FONT
-        );
-
-        titleLabel.setForeground(
-                AppTheme.TEXT_PRIMARY
-        );
-
-        registrationCard.add(
-                titleLabel,
-                gbc
-        );
-
-        /*
-         * Subtitle
-         */
-
-        gbc.gridy++;
-
-        JLabel instructionLabel =
-                new JLabel(
-                        "Enter your details to create an account"
-                );
-
-        instructionLabel.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        instructionLabel.setForeground(
-                AppTheme.TEXT_SECONDARY
-        );
-
-        gbc.insets =
-                new Insets(
-                        0, 5, 20, 5
-                );
-
-        registrationCard.add(
-                instructionLabel,
-                gbc
-        );
-
-        /*
-         * Full Name
-         */
-
-        gbc.gridy++;
-
-        addLabel(
-                registrationCard,
-                "Full Name",
-                gbc
-        );
-
-        gbc.gridy++;
-
-        fullNameField =
-                new JTextField();
-
-        AppTheme.styleTextField(
-                fullNameField
-        );
-
-        registrationCard.add(
-                fullNameField,
-                gbc
-        );
-
-        /*
-         * Username
-         */
-
-        gbc.gridy++;
-
-        addLabel(
-                registrationCard,
-                "Username",
-                gbc
-        );
-
-        gbc.gridy++;
-
-        usernameField =
-                new JTextField();
-
-        AppTheme.styleTextField(
-                usernameField
-        );
-
-        registrationCard.add(
-                usernameField,
-                gbc
-        );
-
-        /*
-         * Email
-         */
-
-        gbc.gridy++;
-
-        addLabel(
-                registrationCard,
-                "Email",
-                gbc
-        );
-
-        gbc.gridy++;
-
-        emailField =
-                new JTextField();
-
-        AppTheme.styleTextField(
-                emailField
-        );
-
-        registrationCard.add(
-                emailField,
-                gbc
-        );
-
-        /*
-         * Phone
-         */
-
-        gbc.gridy++;
-
-        addLabel(
-                registrationCard,
-                "Phone",
-                gbc
-        );
-
-        gbc.gridy++;
-
-        phoneField =
-                new JTextField();
-
-        AppTheme.styleTextField(
-                phoneField
-        );
-
-        registrationCard.add(
-                phoneField,
-                gbc
-        );
-
-        /*
-         * Password
-         */
-
-        gbc.gridy++;
-
-        addLabel(
-                registrationCard,
-                "Password",
-                gbc
-        );
-
-        gbc.gridy++;
-
-        passwordField =
-                new JPasswordField();
-
-        AppTheme.stylePasswordField(
-                passwordField
-        );
-
-        registrationCard.add(
-                passwordField,
-                gbc
-        );
-
-        /*
-         * Register button
-         */
-
-        gbc.gridy++;
-
-        gbc.insets =
-                new Insets(
-                        20, 5, 8, 5
-                );
-
-        JButton registerButton =
-                new JButton(
-                        "Create Account"
-                );
-
-        AppTheme.styleButton(
-                registerButton
-        );
-
-        registrationCard.add(
-                registerButton,
-                gbc
-        );
-
-        /*
-         * Back button
-         */
-
-        gbc.gridy++;
-
-        JButton backButton =
-                new JButton(
-                        "Back to Login"
-                );
-
-        backButton.setFont(
-                AppTheme.BODY_FONT
-        );
-
-        backButton.setForeground(
-                AppTheme.PRIMARY
-        );
-
-        backButton.setBackground(
-                Color.WHITE
-        );
-
-        backButton.setFocusPainted(
-                false
-        );
-
-        backButton.setBorder(
-                BorderFactory.createEmptyBorder(
-                        8, 8, 8, 8
-                )
-        );
-
-        backButton.setCursor(
-                new java.awt.Cursor(
-                        java.awt.Cursor.HAND_CURSOR
-                )
-        );
-
-        registrationCard.add(
-                backButton,
-                gbc
-        );
-
-        rightPanel.add(
-                registrationCard
-        );
-
-        mainPanel.add(
-                brandingPanel,
-                BorderLayout.WEST
-        );
-
-        mainPanel.add(
-                rightPanel,
-                BorderLayout.CENTER
-        );
-
-        add(mainPanel);
-
-        /*
-         * -------------------------------------------------
-         * BUTTON ACTIONS
-         * -------------------------------------------------
-         */
-
-        registerButton.addActionListener(
-                e -> registerPatient()
-        );
-
-        backButton.addActionListener(
-                e -> openLogin()
-        );
+        return brand;
     }
 
-    /**
-     * Adds a standard field label.
-     */
-    private void addLabel(
-            JPanel panel,
-            String text,
-            GridBagConstraints gbc) {
+    private JPanel createFeature(
+            String symbol,
+            String text) {
+
+        JPanel row =
+                new JPanel(
+                        new BorderLayout(
+                                12,
+                                0
+                        )
+                );
+
+        row.setOpaque(false);
+
+        row.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        row.setMaximumSize(
+                new Dimension(
+                        520,
+                        38
+                )
+        );
+
+        JLabel icon =
+                new JLabel(symbol);
+
+        icon.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        17
+                )
+        );
+
+        icon.setForeground(
+                new Color(96, 165, 250)
+        );
 
         JLabel label =
                 new JLabel(text);
 
         label.setFont(
-                AppTheme.SUBHEADING_FONT
+                AppTheme.FONT_BODY
         );
 
         label.setForeground(
-                AppTheme.TEXT_PRIMARY
+                new Color(226, 232, 240)
         );
 
-        panel.add(
+        row.add(
+                icon,
+                BorderLayout.WEST
+        );
+
+        row.add(
                 label,
-                gbc
+                BorderLayout.CENTER
+        );
+
+        return row;
+    }
+
+    // =========================================================
+    // REGISTRATION SECTION
+    // =========================================================
+
+    private JPanel createRegistrationSection() {
+
+        JPanel section =
+                new JPanel(new GridBagLayout());
+
+        section.setBackground(
+                AppTheme.BACKGROUND
+        );
+
+        JPanel card =
+                new JPanel();
+
+        card.setBackground(
+                AppTheme.WHITE
+        );
+
+        card.setLayout(
+                new BoxLayout(
+                        card,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+        card.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                AppTheme.BORDER,
+                                1
+                        ),
+                        new EmptyBorder(
+                                34,
+                                42,
+                                34,
+                                42
+                        )
+                )
+        );
+
+        card.setPreferredSize(
+                new Dimension(
+                        500,
+                        650
+                )
+        );
+
+        JLabel heading =
+                new JLabel("Create your account");
+
+        heading.setFont(
+                AppTheme.FONT_H1
+        );
+
+        heading.setForeground(
+                AppTheme.TEXT
+        );
+
+        heading.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        JLabel subtitle =
+                new JLabel(
+                        "Register as a patient to get started."
+                );
+
+        subtitle.setFont(
+                AppTheme.FONT_BODY
+        );
+
+        subtitle.setForeground(
+                AppTheme.TEXT_SECONDARY
+        );
+
+        subtitle.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        card.add(heading);
+
+        card.add(
+                Box.createVerticalStrut(6)
+        );
+
+        card.add(subtitle);
+
+        card.add(
+                Box.createVerticalStrut(24)
+        );
+
+        fullNameField =
+                new JTextField();
+
+        addField(
+                card,
+                "Full Name",
+                fullNameField
+        );
+
+        usernameField =
+                new JTextField();
+
+        addField(
+                card,
+                "Username",
+                usernameField
+        );
+
+        emailField =
+                new JTextField();
+
+        addField(
+                card,
+                "Email Address",
+                emailField
+        );
+
+        phoneField =
+                new JTextField();
+
+        addField(
+                card,
+                "Phone Number",
+                phoneField
+        );
+
+        passwordField =
+                new JPasswordField();
+
+        addField(
+                card,
+                "Password",
+                passwordField
+        );
+
+        confirmPasswordField =
+                new JPasswordField();
+
+        addField(
+                card,
+                "Confirm Password",
+                confirmPasswordField
+        );
+
+        card.add(
+                Box.createVerticalStrut(8)
+        );
+
+        JButton registerButton =
+                AppTheme.primaryButton(
+                        "Create Patient Account"
+                );
+
+        registerButton.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        registerButton.setMaximumSize(
+                new Dimension(
+                        Integer.MAX_VALUE,
+                        AppTheme.BUTTON_HEIGHT
+                )
+        );
+
+        registerButton.addActionListener(
+                e -> handleRegistration()
+        );
+
+        card.add(registerButton);
+
+        card.add(
+                Box.createVerticalStrut(10)
+        );
+
+        JButton backButton =
+                AppTheme.secondaryButton(
+                        "Back to Sign In"
+                );
+
+        backButton.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        backButton.setMaximumSize(
+                new Dimension(
+                        Integer.MAX_VALUE,
+                        AppTheme.BUTTON_HEIGHT
+                )
+        );
+
+        backButton.addActionListener(
+                e -> returnToLogin()
+        );
+
+        card.add(backButton);
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        gbc.insets =
+                new Insets(
+                        25,
+                        45,
+                        25,
+                        45
+                );
+
+        section.add(card, gbc);
+
+        return section;
+    }
+
+    // =========================================================
+    // FIELD HELPER
+    // =========================================================
+
+    private void addField(
+            JPanel parent,
+            String labelText,
+            JComponent field) {
+
+        JLabel label =
+                new JLabel(labelText);
+
+        label.setFont(
+                AppTheme.FONT_SMALL_BOLD
+        );
+
+        label.setForeground(
+                AppTheme.TEXT
+        );
+
+        label.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        field.setAlignmentX(
+                Component.LEFT_ALIGNMENT
+        );
+
+        if (field instanceof JTextField) {
+
+            AppTheme.styleTextField(
+                    (JTextField) field
+            );
+
+        } else if (field instanceof JPasswordField) {
+
+            AppTheme.stylePasswordField(
+                    (JPasswordField) field
+            );
+        }
+
+        parent.add(label);
+
+        parent.add(
+                Box.createVerticalStrut(6)
+        );
+
+        parent.add(field);
+
+        parent.add(
+                Box.createVerticalStrut(12)
         );
     }
 
-    /**
-     * Registers a new patient account.
-     *
-     * Database logic remains unchanged.
-     */
-    private void registerPatient() {
+    // =========================================================
+    // REGISTRATION LOGIC
+    // =========================================================
 
-        String username =
-                usernameField
-                        .getText()
-                        .trim();
-
-        String password =
-                new String(
-                        passwordField
-                                .getPassword()
-                );
+    private void handleRegistration() {
 
         String fullName =
                 fullNameField
+                        .getText()
+                        .trim();
+
+        String username =
+                usernameField
                         .getText()
                         .trim();
 
@@ -562,20 +629,61 @@ public class RegisterFrame extends JFrame {
                         .getText()
                         .trim();
 
-        /*
-         * Basic validation.
-         */
+        String password =
+                new String(
+                        passwordField.getPassword()
+                );
 
-        if (username.isEmpty()
-                || password.isEmpty()
-                || fullName.isEmpty()
+        String confirmPassword =
+                new String(
+                        confirmPasswordField
+                                .getPassword()
+                );
+
+        if (fullName.isEmpty()
+                || username.isEmpty()
                 || email.isEmpty()
-                || phone.isEmpty()) {
+                || phone.isEmpty()
+                || password.isEmpty()
+                || confirmPassword.isEmpty()) {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Please fill in all fields.",
+            showMessage(
+                    "Please complete all fields.",
                     "Missing Information",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+
+            showMessage(
+                    "Passwords do not match.",
+                    "Invalid Password",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (password.length() < 6) {
+
+            showMessage(
+                    "Password must contain at least 6 characters.",
+                    "Invalid Password",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (!email.contains("@")
+                || !email.contains(".")) {
+
+            showMessage(
+                    "Please enter a valid email address.",
+                    "Invalid Email",
                     JOptionPane.WARNING_MESSAGE
             );
 
@@ -592,38 +700,54 @@ public class RegisterFrame extends JFrame {
                     phone
             );
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Patient account created successfully!\n"
-                            + "You can now log in.",
+            showMessage(
+                    "Patient account created successfully.\n"
+                    + "You can now sign in.",
                     "Registration Successful",
                     JOptionPane.INFORMATION_MESSAGE
             );
 
-            openLogin();
+            returnToLogin();
 
-        } catch (SQLException ex) {
+        } catch (Exception exception) {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Unable to create account.\n\n"
-                            + ex.getMessage(),
-                    "Registration Error",
+            exception.printStackTrace();
+
+            showMessage(
+                    "Unable to create the account.\n\n"
+                    + exception.getMessage(),
+                    "Registration Failed",
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    /**
-     * Returns to the login screen.
-     */
-    private void openLogin() {
+    // =========================================================
+    // NAVIGATION
+    // =========================================================
 
-        LoginFrame loginFrame =
-                new LoginFrame();
-
-        loginFrame.setVisible(true);
+    private void returnToLogin() {
 
         dispose();
+
+        new LoginFrame()
+                .setVisible(true);
+    }
+
+    // =========================================================
+    // MESSAGE
+    // =========================================================
+
+    private void showMessage(
+            String message,
+            String title,
+            int messageType) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                title,
+                messageType
+        );
     }
 }

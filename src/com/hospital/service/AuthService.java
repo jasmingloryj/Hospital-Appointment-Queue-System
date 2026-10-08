@@ -22,7 +22,7 @@ public class AuthService {
      * is different.
      */
     private static final String DB_URL =
-            "jdbc:mysql://localhost:3306/hospital_queue_db"
+            "jdbc:mysql://localhost:3306/hospital_queue_v2"
                     + "?useSSL=false&serverTimezone=Asia/Kolkata"
                     + "&allowPublicKeyRetrieval=true";
 
