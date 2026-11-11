@@ -1,5 +1,5 @@
 # Hospital Appointment and Queue Management System
-##Project Overview
+## Project Overview
 
 A Java Swing desktop application integrated with MySQL that simplifies hospital appointment scheduling, patient queue management, and consultation handling.
 
