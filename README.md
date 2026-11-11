@@ -3,7 +3,7 @@
 
 A Java Swing desktop application integrated with MySQL that simplifies hospital appointment scheduling, patient queue management, and consultation handling.
 
-##Technologies Used
+## Technologies Used
 
 - Java
 - Java Swing
@@ -11,7 +11,7 @@ A Java Swing desktop application integrated with MySQL that simplifies hospital 
 - JDBC
 - MySQL Connector/J
 
-##Main Features
+## Main Features
 
 - Patient registration and authentication
 - Role-based access for Patients, Doctors, and Admins
@@ -24,7 +24,7 @@ A Java Swing desktop application integrated with MySQL that simplifies hospital 
 - Patient medical records
 - Doctor and department administration
 
-##Database
+## Database
 
 Database name: "hospital_queue_v2"
 
@@ -41,14 +41,14 @@ The database contains eight tables:
 
 The SQL export is available in the "database" folder.
 
-##Project Structure
+## Project Structure
 
 - "SRC/" – Java source code
 - "LIB/" – Required libraries
 - "database/" – SQL database export
 - "screenshots/" – Application screenshots
 
-##Setup Instructions
+## Setup Instructions
 
 1. Install Java JDK and MySQL.
 2. Import "database/database_final.sql" into MySQL.
@@ -57,12 +57,12 @@ The SQL export is available in the "database" folder.
 5. Open the project in a Java IDE.
 6. Run the application's main class.
 
-##User Roles
+## User Roles
 
 - Patient: Book appointments, view queue status, and submit emergency requests.
 - Doctor: Manage queues, review emergency requests, conduct consultations, and prescribe medicines.
 - Admin: Manage doctors and departments.
 
-##Project Purpose
+## Project Purpose
 
 Developed as an academic project to demonstrate Object-Oriented Programming, Java GUI development, database connectivity, and transaction-based data management.
